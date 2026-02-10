@@ -1,0 +1,36 @@
+name: ⚡ Reusable Cyanprint
+
+on:
+  workflow_call:
+    inputs:
+      atomi_platform:
+        required: true
+        type: string
+      atomi_service:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+
+jobs:
+  cyanprint:
+    name: Cyanprint
+    runs-on:
+      - nscloud-ubuntu-22.04-amd64-4x8-with-cache
+      - nscloud-cache-size-50gb
+      - nscloud-cache-tag-${{ inputs.atomi_platform }}-${{ inputs.atomi_service }}-nix-store-cache
+    steps:
+      # Setup
+      - uses: AtomiCloud/actions.setup-nix@v2
+      #
+      - uses: AtomiCloud/actions.cache-bun@v1
+      #
+
+      # Pre Commit
+      - name: Run push cyanprint
+        env:
+          DOMAIN: ghcr.io
+          GITHUB_REPO_REF: ${{ github.repository }}
+          CYAN_TOKEN: ${{ secrets.CYAN_TOKEN }}
+        run: nix develop .#ci -c ./scripts/publish.sh ${{ inputs.version }}

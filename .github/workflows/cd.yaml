@@ -1,0 +1,42 @@
+#
+name: CD
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+jobs:
+  #
+  docker:
+    name: Build Template Docker Image
+    uses: ./.github/workflows/⚡reusable-docker.yaml
+    secrets: inherit
+    with:
+      atomi_platform: shared
+      atomi_service: shared
+
+      dockerfile: ./cyan/template.Dockerfile
+      image_name: template
+      context: ./cyan
+
+      version: ${{ github.ref_name }}
+  docker-blob:
+    name: Build Blob Docker Image
+    uses: ./.github/workflows/⚡reusable-docker.yaml
+    secrets: inherit
+    with:
+      atomi_platform: shared
+      atomi_service: shared
+      dockerfile: ./cyan/blob.Dockerfile
+      image_name: blob
+      version: ${{ github.ref_name }}
+  Cyanprint:
+    name: Push to Cyanprint
+    uses: ./.github/workflows/⚡reusable-cyanprint.yaml
+    secrets: inherit
+    with:
+      atomi_platform: shared
+      atomi_service: shared
+      version: ${{ github.ref_name }}
+  #
+#

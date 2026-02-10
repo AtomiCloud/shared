@@ -1,0 +1,11 @@
+username: atomi
+name: shared
+description: All shared files across repos
+project: https://github.com/AtomiCloud/shared.shared
+source: https://github.com/AtomiCloud/shared.shared.git
+email: admin@atomi.cloud
+tags: ['atomi']
+readme: cyan/README.MD
+processors: ['cyan/default']
+plugins: []
+templates: []

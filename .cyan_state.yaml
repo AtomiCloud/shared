@@ -1,0 +1,213 @@
+cyan/new:
+  active: true
+  history:
+    - version: 12
+      time: 2025-09-20T04:16:50.929573Z
+      answers:
+        cyan/new/language:
+          type: String
+          value: Typescript
+        cyan/new/source:
+          type: String
+          value: https://github.com/AtomiCloud/shared.shared.git
+        cyan/new/more-tags/1:
+          type: String
+          value: no
+        cyan/new/more-plugins/0:
+          type: String
+          value: no
+        cyan/new/username:
+          type: String
+          value: atomi
+        cyan/new/processor/0:
+          type: String
+          value: cyan/default
+        cyan/new/project:
+          type: String
+          value: https://github.com/AtomiCloud/shared.shared
+        cyan/new/description:
+          type: String
+          value: All shared files across repos
+        cyan/new/more-processors/1:
+          type: String
+          value: no
+        cyan/new/name:
+          type: String
+          value: shared
+        cyan/new/more-tags/0:
+          type: String
+          value: yes
+        cyan/new/tag/0:
+          type: String
+          value: atomi
+        cyan/new/email:
+          type: String
+          value: admin@atomi.cloud
+        cyan/new/create:
+          type: String
+          value: Template
+        cyan/new/more-processors/0:
+          type: String
+          value: yes
+      deterministic_states: {}
+    - version: 14
+      time: 2026-02-10T05:02:12.266733Z
+      answers:
+        cyan/new/username:
+          type: String
+          value: atomi
+        cyan/new/more-tags/0:
+          type: String
+          value: yes
+        cyan/new/name:
+          type: String
+          value: shared
+        cyan/new/processor/0:
+          type: String
+          value: cyan/default
+        cyan/new/language:
+          type: String
+          value: Typescript
+        cyan/new/more-plugins/0:
+          type: String
+          value: no
+        cyan/new/project:
+          type: String
+          value: https://github.com/AtomiCloud/shared.shared
+        cyan/new/more-processors/1:
+          type: String
+          value: no
+        cyan/new/more-processors/0:
+          type: String
+          value: yes
+        cyan/new/create:
+          type: String
+          value: Template
+        cyan/new/more-tags/1:
+          type: String
+          value: no
+        cyan/new/source:
+          type: String
+          value: https://github.com/AtomiCloud/shared.shared.git
+        cyan/new/description:
+          type: String
+          value: All shared files across repos
+        cyan/new/tag/0:
+          type: String
+          value: atomi
+        cyan/new/email:
+          type: String
+          value: admin@atomi.cloud
+      deterministic_states: {}
+atomi/nix-init:
+  active: true
+  history:
+    - version: 13
+      time: 2025-09-20T04:17:58.544143Z
+      answers:
+        init-type:
+          type: String
+          value: CyanPrint Bun
+      deterministic_states: {}
+    - version: 14
+      time: 2025-09-20T08:02:51.664181Z
+      answers:
+        init-type:
+          type: String
+          value: CyanPrint Bun
+      deterministic_states: {}
+    - version: 24
+      time: 2026-02-10T05:01:12.187709Z
+      answers:
+        init-type:
+          type: String
+          value: CyanPrint Bun
+      deterministic_states: {}
+atomi/workspace:
+  active: true
+  history:
+    - version: 20
+      time: 2025-09-20T04:18:17.086559Z
+      answers:
+        atomi/workspace/enable-helm:
+          type: Bool
+          value: false
+        atomi/workspace/runtime:
+          type: String
+          value: Bun
+        atomi/workspace/platform:
+          type: String
+          value: shared
+        atomi/workspace/service:
+          type: String
+          value: shared
+        atomi/workspace/enable-docker:
+          type: Bool
+          value: true
+        atomi/workspace/enable-secret:
+          type: Bool
+          value: false
+      deterministic_states: {}
+    - version: 21
+      time: 2025-09-20T08:02:47.069358Z
+      answers:
+        atomi/workspace/enable-helm:
+          type: Bool
+          value: false
+        atomi/workspace/runtime:
+          type: String
+          value: Bun
+        atomi/workspace/platform:
+          type: String
+          value: shared
+        atomi/workspace/enable-secret:
+          type: Bool
+          value: false
+        atomi/workspace/service:
+          type: String
+          value: shared
+        atomi/workspace/enable-docker:
+          type: Bool
+          value: true
+      deterministic_states: {}
+    - version: 27
+      time: 2026-02-10T05:01:41.768921Z
+      answers:
+        atomi/workspace/enable-helm:
+          type: Bool
+          value: false
+        atomi/workspace/platform:
+          type: String
+          value: shared
+        atomi/workspace/runtime:
+          type: String
+          value: Bun
+        atomi/workspace/service:
+          type: String
+          value: shared
+        atomi/workspace/enable-secret:
+          type: Bool
+          value: false
+        atomi/workspace/enable-docker:
+          type: Bool
+          value: true
+      deterministic_states: {}
+atomi/cyan:
+  active: true
+  history:
+    - version: 14
+      time: 2026-02-10T05:45:29.577438Z
+      answers:
+        atomi-cyan/template-name:
+          type: String
+          value: shared
+        atomi-cyan/template-description:
+          type: String
+          value: All shared files across repos
+        atomi-cyan/service:
+          type: String
+          value: shared
+        atomi-cyan/platform:
+          type: String
+          value: shared
+      deterministic_states: {}

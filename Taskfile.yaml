@@ -1,0 +1,23 @@
+version: '3'
+
+tasks:
+  setup:
+    desc: 'Setup the repository'
+    dir: cyan
+    cmds: #
+      - bun install
+      #
+      #
+  lint:
+    desc: Lints the whole code-base
+    dir: cyan
+    cmds:
+      - pre-commit run --all
+  #
+  deadcode:
+    desc: 'Find code only used by tests or not used at all (requires verification)'
+    dir: cyan
+    cmds: #
+      - bun knip --include classMembers,types
+      #
+  #
