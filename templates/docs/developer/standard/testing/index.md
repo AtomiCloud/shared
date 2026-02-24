@@ -433,10 +433,9 @@ tests/
 
 See language-specific guides for implementation details:
 
-- [TypeScript/Bun](./typescript.md) - Mocha + Should
-- [C#/.NET](./csharp.md) - xUnit + FluentAssertions
-- [Go](./go.md) - testing + testify
-- [Rust](./rust.md) - built-in
+- [TypeScript/Bun](./languages/typescript.md) - bun:test
+- [C#/.NET](./languages/csharp.md) - xUnit + FluentAssertions
+- [Go](./languages/go.md) - testing + testify
 
 ## Related Articles
 

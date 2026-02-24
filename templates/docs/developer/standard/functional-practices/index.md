@@ -10,30 +10,6 @@ This article builds on [Software Design Philosophy](../software-design-philosoph
 
 Immutability means never modifying existing data. Instead, every transformation produces a new value.
 
-### Why: The Combinatorial Explosion Argument
-
-Consider three functions -- `f`, `g`, and `h` -- that all read and write a shared mutable variable `x`.
-
-How many scenarios must you reason about?
-
-- **3 functions** can be called in **3! = 6 orderings** (f-g-h, f-h-g, g-f-h, g-h-f, h-f-g, h-g-f).
-- Each function can encounter `x` in **3 different states** (set by itself or by the two others that ran before it).
-- Total scenarios: **3 x 3! = 18 combinations**.
-
-That is 18 possible interactions for just three functions sharing one variable. In a real system with hundreds of functions and dozens of shared variables, this number explodes beyond human comprehension.
-
-Now make `x` immutable. Each function receives its input as a parameter and returns a new value. The variable `x` is never modified.
-
-- The 6 orderings still exist, but **position no longer matters** -- each function always sees the value it was given, not a value corrupted by a prior call.
-- Total scenarios: **6** (just the orderings).
-
-We went from 18 to 6 -- a 3x reduction -- with only three functions. In a real codebase, the reduction is orders of magnitude greater because the shared variable count `k` grows:
-
-- **Mutable:** O(n \* k!) complexity, where `n` is the number of functions and `k` is the number of shared mutable variables.
-- **Immutable:** O(k!) complexity -- the position dimension vanishes entirely.
-
-This is why immutability is not just a preference. It is a structural constraint that makes reasoning about code tractable.
-
 ### The Rule
 
 Never mutate inputs. Always return new values.
@@ -112,7 +88,7 @@ function divide(a: Int, b: Int) -> Result<Int, DivisionError>:
 
 The partial version lies. Its type signature says "give me two ints and I will give you an int." But for some inputs, it blows up. Every caller must remember to wrap it in try/catch, and the compiler cannot help them remember.
 
-The total version tells the truth. Its return type says "you will get either an Int or a DivisionError." The caller is forced by the type system to handle both cases. No surprises, no unhandled exceptions propagating through the stack.
+The total version tells the truth. Its return type says "you will get either an Int or a DivisionError." The caller is forced by the type system to handle both cases.
 
 **Rules for total functions:**
 
@@ -207,26 +183,17 @@ Data flows forward through `.map()` and `.andThen()`. Errors flow sideways throu
 
 ## Grouping, Not Encapsulation
 
-A word on terminology: we prefer **grouping** over **encapsulation**.
+We prefer **grouping** over **encapsulation**.
 
 Encapsulation implies hiding -- the private/public distinction, information hiding, secrets kept within boundaries. While this sounds good in theory, it often leads to code that hides too much. Private methods become hidden dependencies. Internal state becomes a black box that tests cannot inspect.
 
-**Grouping** is a simpler concept. It means putting related things together. That's it.
+**Grouping** means putting related things together:
 
 - Things that change together? Group them.
 - Things that share a reason to change? Group them.
 - Things that form a cohesive concept? Group them.
 
 Grouping does not require hiding. A group can be fully transparent -- every member visible, every dependency explicit -- while still providing the benefit of cohesion.
-
-When we say "this service groups validation logic," we mean:
-
-- All validation code lives in one place
-- It changes for one reason
-- Its dependencies are visible
-- Its behavior is testable
-
-No hiding required. Just thoughtful organization.
 
 ---
 
@@ -260,6 +227,14 @@ No hiding required. Just thoughtful organization.
 - [ ] No hiding behind private/public boundaries that obscure behavior.
 
 ---
+
+## Language-Specific Details
+
+See language-specific guides for implementation details:
+
+- [TypeScript/Bun](./languages/typescript.md)
+- [C#/.NET](./languages/csharp.md)
+- [Go](./languages/go.md)
 
 ## Related Articles
 

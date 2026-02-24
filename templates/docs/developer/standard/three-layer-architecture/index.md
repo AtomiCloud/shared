@@ -10,11 +10,9 @@ If you have read about hexagonal architecture, ports and adapters, or onion arch
 
 ## Why Three Models for the Same Concept?
 
-I hate the advice "DRY" (Don't Repeat Yourself). It is often overused and misused.
+Things that look exactly the same might not be repetition. The Single Responsibility Principle helps distinguish: if they change for different reasons, they are separate concerns, not duplication.
 
-Repeating yourself can be defined in a variety of ways, and things that look exactly the same MIGHT not be repeating yourself. In fact, we can look at the Single Responsibility Principle to know what IS repeating yourself.
-
-Consider a `User` concept in a typical web application:
+A `User` concept in a typical web application has three representations:
 
 ```
 // API Request/Response
@@ -27,7 +25,7 @@ User { email: Email, passwordHash: HashedPassword }
 { email: "alice@example.com", password_hash: "$2b$12..." }
 ```
 
-These look similar. A naive developer might say "this is repetition, let's use one model everywhere." But they change for different reasons:
+These look similar but change for different reasons:
 
 - The API changes when mobile developers request a different field format
 - The domain changes when business rules evolve (password complexity, email validation)
@@ -43,45 +41,17 @@ Using one model couples all these concerns together. A change to the API respons
 
 The three-layer architecture is a plugin architecture. The domain is the core. Everything else -- HTTP handlers, database adapters, message queue consumers -- is a plugin that can be swapped.
 
-### Why This Matters: The Laravel Upgrade Story
-
-Imagine your application is built on Laravel 2. The framework works fine, but Laravel 3 introduces significant improvements. You want to upgrade.
-
-If your business logic is tightly coupled to Laravel:
-
-- Every controller depends on Laravel's `Request` object
-- Every service uses Laravel's `Config` facade
-- Every repository returns Laravel's `Collection`
-
-The upgrade requires touching every file. It is a rewrite disguised as an upgrade.
-
-If your business logic is isolated behind interfaces:
-
-- Controllers are thin wrappers that call domain services
-- Domain services depend on interfaces, not Laravel implementations
-- Repositories implement domain interfaces, using Laravel's ORM internally
-
-The upgrade requires:
-
-1. Update the framework dependency
-2. Update the adapters (repositories, controllers)
-3. The domain layer is untouched
-
-This is not hypothetical. Framework upgrades are often breaking changes. A major version bump can be effectively a framework change. By isolating the domain, you turn a multi-month migration into a focused update of the outer layers.
-
----
-
 ## The Three Layers
 
 ```
                     ┌──────────────────────────────────────┐
-  Events enter      │       INWARD LAYER (Controller)      │   HTTP, CLI, WebSocket,
+  Events enter      │          API LAYER                   │   HTTP, CLI, WebSocket,
   from outside  ──> │  Receives input, calls domain,       │   cron jobs, message queues
                     │  returns output. No business logic.   │
                     └──────────────────┬───────────────────┘
                                        │
-                              Controller Mapper
-                            (Req/Res ↔ Domain)
+                                 API Mapper
+                            (Req/Res ↔ Record/Principal)
                                        │
                     ┌──────────────────┴───────────────────┐
                     │        DOMAIN LAYER (Pure)            │   Business rules,
@@ -90,25 +60,25 @@ This is not hypothetical. Framework upgrades are often breaking changes. A major
                     │  needs from the outside world.        │   100% testable.
                     └──────────────────┬───────────────────┘
                                        │
-                              Repository Mapper
-                            (Domain ↔ Data)
+                                Data Mapper
+                           (Principal ↔ Row)
                                        │
                     ┌──────────────────┴───────────────────┐
-  Side effects      │      OUTWARD LAYER (Repository)      │   Database adapters,
+  Side effects      │          DATA LAYER                  │   Database adapters,
   happen here   <── │  Implements domain interfaces.        │   API clients, file system,
                     │  Translates domain calls to IO.       │   message brokers
                     └──────────────────────────────────────┘
 ```
 
-### Inward Layer (Controller)
+### API Layer
 
-The inward layer is where events and instructions enter the system. An HTTP request arrives. A CLI command is parsed. A WebSocket message is received. A cron job fires.
+The API layer is where events and instructions enter the system. An HTTP request arrives. A CLI command is parsed. A WebSocket message is received. A cron job fires.
 
-The controller's job is narrow: parse the incoming input, convert it to a domain-friendly shape using a mapper, call the domain, convert the domain's response back to an output-friendly shape, and return it.
+The API layer's job is narrow: parse the incoming input, convert it to a domain-friendly shape using a mapper, call the domain, convert the domain's response back to an output-friendly shape, and return it.
 
-Controllers contain **zero business logic**. They are thin. They are boring. That is the point. A controller for an HTTP endpoint and a controller for a CLI command can call the exact same domain service. The domain does not know or care which controller invoked it.
+The API layer contains **zero business logic**. It is intentionally minimal. An HTTP controller and a CLI controller can call the exact same domain service. The domain does not know or care which one invoked it.
 
-Common controller types include:
+Common API layer types include:
 
 - **HTTP controllers** - parse requests, serialize JSON responses, set status codes
 - **CLI controllers** - parse command-line arguments, format terminal output
@@ -159,14 +129,14 @@ interface IOrderRepository
   fun search(params: SearchParams): Result<OrderPrincipal[], OrderError>
 ```
 
-### Outward Layer (Repository)
+### Data Layer
 
-The outward layer implements the interfaces that the domain defines. A `PostgresOrderRepository` implements `IOrderRepository`. A `FileSystemConfigRepository` implements `IConfigRepository`. An `HttpNotificationClient` implements `INotificationService`.
+The data layer implements the interfaces that the domain defines. A `PostgresOrderRepository` implements `IOrderRepository`. A `FileSystemConfigRepository` implements `IConfigRepository`. An `HttpNotificationClient` implements `INotificationService`.
 
-Repositories handle all the messy details of the external world: connection pooling, retries, serialization to storage formats, error translation. The domain never sees any of this.
+The data layer handles all the messy details of the external world: connection pooling, retries, serialization to storage formats, error translation. The domain never sees any of this.
 
 ```
-// Outward layer -- implements domain interface
+// Data layer -- implements domain interface
 class PostgresOrderRepository(db: Database): IOrderRepository
 
   fun save(order: Order): Result<Order, OrderError>
@@ -187,7 +157,7 @@ class PostgresOrderRepository(db: Database): IOrderRepository
       return Err(OrderError.StorageFailure(e.message))
 ```
 
-Notice that the repository catches infrastructure exceptions and translates them into domain error types. The domain never sees a `DatabaseConnectionException`. It sees `OrderError.StorageFailure`. This is the error mapping story, which we will expand on below.
+Notice that the data layer catches infrastructure exceptions and translates them into domain error types. The domain never sees a `DatabaseConnectionException`. It sees `OrderError.StorageFailure`. This is the error mapping story, which we will expand on below.
 
 ---
 
@@ -195,9 +165,9 @@ Notice that the repository catches infrastructure exceptions and translates them
 
 Each layer has its own models. This is non-negotiable.
 
-### Controller Models (Request/Response)
+### API Models (Request/Response)
 
-Controller models are optimized for the transport protocol. For HTTP, they carry serialization annotations, validation decorators, and string-friendly types. They are sometimes called DTOs (Data Transfer Objects).
+API models are optimized for the transport protocol. For HTTP, they carry serialization annotations, validation decorators, and string-friendly types.
 
 ```
 // What the API receives
@@ -257,13 +227,13 @@ record OrderData
 
 ### Why Separate Models Matter
 
-| Scenario                   | Shared models       | Separate models with mappers       |
-| -------------------------- | ------------------- | ---------------------------------- |
-| Change API format          | Breaks domain tests | Update controller mapper only      |
-| Change DB schema           | Breaks domain tests | Update repository mapper only      |
-| Add CLI interface          | Modify domain       | Add new controller models + mapper |
-| Switch to PostgreSQL       | Touch all layers    | Update repository + data mapper    |
-| Version the API (v1 to v2) | Fork the domain     | Add v2 controller models + mapper  |
+| Scenario                   | Shared models       | Separate models with mappers    |
+| -------------------------- | ------------------- | ------------------------------- |
+| Change API format          | Breaks domain tests | Update API mapper only          |
+| Change DB schema           | Breaks domain tests | Update data mapper only         |
+| Add CLI interface          | Modify domain       | Add new Req/Res + API mapper    |
+| Switch to PostgreSQL       | Touch all layers    | Update data layer + data mapper |
+| Version the API (v1 to v2) | Fork the domain     | Add v2 Req/Res + API mapper     |
 
 The cost is writing mapper functions. The benefit is that each layer changes independently. In practice, the mappers are small, pure functions that are trivial to write and test. The protection they provide against cascading changes far outweighs their cost.
 
@@ -273,16 +243,16 @@ The cost is writing mapper functions. The benefit is that each layer changes ind
 
 Mappers are pure functions that translate models from one layer to another. There are two mapper boundaries:
 
-### Controller Mapper (Request/Response to Domain)
+### API Mapper (Request/Response ↔ Domain)
 
-The controller mapper sits between the inward layer and the domain. It converts incoming requests into domain inputs and domain outputs into responses.
+The API mapper sits between the API layer and the domain. It converts incoming requests into domain inputs and domain outputs into responses.
 
 ```
-// Controller mapper -- pure functions
-module OrderControllerMapper
+// API mapper -- pure functions
+module OrderApiMapper
 
-  fun toInput(req: CreateOrderReq): CreateOrderInput
-    return CreateOrderInput
+  fun toRecord(req: CreateOrderReq): OrderRecord
+    return OrderRecord
       items: req.items.map(i => OrderItem(
         productId: ProductId(i.productId),
         quantity: i.quantity
@@ -299,16 +269,16 @@ module OrderControllerMapper
       createdAt: order.principal.record.createdAt.toISO()
 ```
 
-### Repository Mapper (Domain to Data)
+### Data Mapper (Domain ↔ Data)
 
-The repository mapper sits between the domain and the outward layer. It converts domain models to data models for storage, and data models back to domain models on retrieval.
+The data mapper sits between the domain and the data layer. It converts domain models to data models for storage, and data models back to domain models on retrieval.
 
 ```
-// Repository mapper -- pure functions
+// Data mapper -- pure functions
 module OrderDataMapper
 
-  fun toData(principal: OrderPrincipal): OrderData
-    return OrderData
+  fun toRow(principal: OrderPrincipal): OrderRow
+    return OrderRow
       id: principal.id.value
       status: principal.record.status.value
       total_cents: principal.record.total.toCents()
@@ -316,25 +286,24 @@ module OrderDataMapper
       created_at: principal.record.createdAt
       updated_at: now()
 
-  fun toDomain(data: OrderData): Order
-    return Order
-      principal: OrderPrincipal
-        id: OrderId(data.id)
-        record: OrderRecord
-          status: OrderStatus.from(data.status)
-          total: Money.fromCents(data.total_cents)
-          couponCode: data.coupon_code != null
-            ? CouponCode(data.coupon_code)
-            : null
-          createdAt: data.created_at
+  fun toPrincipal(row: OrderRow): OrderPrincipal
+    return OrderPrincipal
+      id: OrderId(row.id)
+      record: OrderRecord
+        status: OrderStatus.from(row.status)
+        total: Money.fromCents(row.total_cents)
+        couponCode: row.coupon_code != null
+          ? CouponCode(row.coupon_code)
+          : null
+        createdAt: row.created_at
 ```
 
 ### Why Mappers Matter
 
 Mappers are the isolation mechanism. When a change happens in one layer, the mapper absorbs the impact:
 
-- **API format changes** (rename a field, change a date format, version the endpoint) -- update the controller mapper. The domain is untouched.
-- **Database schema changes** (add a column, change a type, denormalize a table) -- update the repository mapper. The domain is untouched.
+- **API format changes** (rename a field, change a date format, version the endpoint) -- update the API mapper. The domain is untouched.
+- **Database schema changes** (add a column, change a type, denormalize a table) -- update the data mapper. The domain is untouched.
 - **Domain model evolves** (add a new field, refine a type) -- update both mappers. The API and database schemas can follow at their own pace.
 
 This is the architectural version of the [Open-Closed Principle](../solid-principles/index.md): the domain is closed for modification, open for extension through its boundaries.
@@ -361,12 +330,12 @@ enum OrderError
 
 Domain services return `Result<T, OrderError>` (or the language equivalent). The happy path flows on one rail; the error path flows on the other. See [Railway Oriented Programming](../functional-practices/index.md) for the full explanation.
 
-### Repository Error Mapping
+### Data Layer Error Mapping
 
-When a repository catches an infrastructure error, it maps it to a domain error type. The domain never sees raw database exceptions.
+When the data layer catches an infrastructure error, it maps it to a domain error type. The domain never sees raw database exceptions.
 
 ```
-// Repository catches infrastructure error, maps to domain error
+// Data layer catches infrastructure error, maps to domain error
 fun getById(id: OrderId): Result<Order?, OrderError>
   try
     data = db.orders.findById(id.value)
@@ -375,9 +344,9 @@ fun getById(id: OrderId): Result<Order?, OrderError>
     return Err(OrderError.StorageFailure(e.message))
 ```
 
-### Controller Error Mapping (Problem Details)
+### API Layer Error Mapping (Problem Details)
 
-When a domain error reaches the controller, the controller maps it to the appropriate transport response. For HTTP APIs, this means [Problem Details (RFC 9457)](https://www.rfc-editor.org/rfc/rfc9457) -- a standardized JSON error format.
+When a domain error reaches the API layer, it maps the error to the appropriate transport response. For HTTP APIs, this means [Problem Details (RFC 9457)](https://www.rfc-editor.org/rfc/rfc9457) -- a standardized JSON error format.
 
 ```
 // Controller maps domain errors to HTTP Problem Details
@@ -508,26 +477,50 @@ The entry point is the only place in the codebase that knows about concrete type
 
 ## Quick Checklist
 
-- [ ] Three layers: Controller (inward) / Domain (pure) / Repository (outward)
+- [ ] Three layers: API (inward) / Domain (pure) / Data (outward)
 - [ ] Domain has zero IO -- no database, no HTTP, no file system, no console
 - [ ] Domain defines interfaces for its external dependencies
-- [ ] Each layer has its own models: Req/Res, Domain, and Data
-- [ ] Controller mapper translates between Req/Res models and Domain models
-- [ ] Repository mapper translates between Domain models and Data models
+- [ ] Each layer has its own models: Req/Res (API), Record/Principal (Domain), Row (Data)
+- [ ] API mapper translates between Req/Res and Record/Principal
+- [ ] Data mapper translates between Principal and Row
 - [ ] Mappers are pure functions with no side effects
-- [ ] Repository catches infrastructure errors and maps them to domain error types
-- [ ] Controller maps domain errors to transport errors (Problem Details for HTTP)
+- [ ] Data layer catches infrastructure errors and maps them to domain error types
+- [ ] API layer maps domain errors to transport errors (Problem Details for HTTP)
 - [ ] All wiring happens at the composition root (entry point)
 - [ ] Dependency arrows point inward -- outer layers depend on the domain, never the reverse
+
+## Folder Structure
+
+```
+lib/                        # Domain layer
+  <bounded-context>/
+    <entity>/
+      structures.ts|cs|go   # Record, Principal, Aggregate
+      interfaces.ts|cs|go   # Service, Repository interfaces
+      service.ts|cs|go
+      errors.ts|cs|go
+
+adapters/                   # Adapter layer
+  <bounded-context>/
+    <entity>/
+      api/
+        controller.ts|cs|go
+        req.ts|cs|go        # CreateXReq, ListXReq
+        res.ts|cs|go        # XRes, XListRes
+        validator.ts|cs|go
+        mapper.ts|cs|go     # ApiMapper
+      data/
+        repo.ts|cs|go       # PostgresXRepo, MemoryXRepo
+        mapper.ts|cs|go     # DataMapper
+```
 
 ## Language-Specific Details
 
 See language-specific guides for implementation details:
 
-- [TypeScript/Bun](./typescript.md)
-- [C#/.NET](./csharp.md)
-- [Go](./go.md)
-- [Rust](./rust.md)
+- [TypeScript/Bun](./languages/typescript.md)
+- [C#/.NET](./languages/csharp.md)
+- [Go](./languages/go.md)
 
 ## Related Articles
 

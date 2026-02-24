@@ -10,11 +10,9 @@ This article builds on the foundation laid by [Software Design Philosophy](../so
 
 Before you choose a framework, before you pick a database, before you draw an API schema -- design your domain in pure code.
 
-Imagine you are building a chess game. You would start by defining the board, the pieces, the rules of movement, the turn system, and the scoring logic. All of this can be written in code and tested without ever deciding whether the game runs as a mobile app, a CLI, or a web application. You do not need a database to know that a bishop moves diagonally.
+The principle: **commit to a programming language, but do not let the domain assume infrastructure.** The domain layer should contain zero references to HTTP, SQL, file systems, or any external service. It is pure logic operating on pure data.
 
-This is the principle: **commit to a programming language, but do not let the domain assume infrastructure.** The domain layer should contain zero references to HTTP, SQL, file systems, or any external service. It is pure logic operating on pure data.
-
-When you design domain-first, you get three things for free:
+Benefits of domain-first design:
 
 1. **Testability.** Domain logic is exercised with plain unit tests -- no containers, no mocking frameworks, no network calls.
 2. **Portability.** The same domain can be served over REST today and gRPC tomorrow. It can persist to PostgreSQL or DynamoDB. The domain does not care.
@@ -26,24 +24,29 @@ When you design domain-first, you get three things for free:
 
 Every concept in your system deserves a proper noun. Vague words breed confusion and subtle bugs.
 
-Consider the word "user." In a platform that has both end-consumers and tool-administrators, calling both "user" forces every developer to rely on context to guess which one a piece of code refers to. Rename them: **ToolUser** and **EndUser**. Now the code is self-documenting. A function that accepts a `ToolUser` cannot accidentally receive an `EndUser`, and every code review becomes clearer.
+**The rule:** If two developers could reasonably disagree about what a name means, rename it.
+
+| Bad       | Good                           | Why                           |
+| --------- | ------------------------------ | ----------------------------- |
+| `user`    | `ToolUser`, `EndUser`          | Two distinct kinds of users   |
+| `data`    | `PostRecord`, `PostPrincipal`  | Domain types with clear roles |
+| `item`    | `OrderLineItem`, `CartItem`    | Bounded context specific      |
+| `service` | `PostService`, `AuthorService` | Domain-qualified              |
 
 Ubiquitous language extends beyond domain types. AtomiCloud uses arbitrary names for cross-cutting concepts precisely to avoid overloaded terms:
 
 - **Chemical elements** for projects (hydrogen, helium, lithium)
 - **Pokemon** for environments (pikachu, charmander, squirtle)
 
-These names carry no pre-existing baggage. Nobody confuses "pikachu" with the word "production" -- and that is the point. When a name has exactly one meaning in your codebase, ambiguity disappears.
-
-**The rule:** If two developers could reasonably disagree about what a name means, rename it.
+These names carry no pre-existing baggage. When a name has exactly one meaning in your codebase, ambiguity disappears.
 
 ---
 
-## Bounded Context: Bigger OOPs
+## Bounded Context
 
 A bounded context is a sub-module that operates as a closed ecosystem. Inside its boundary, the ubiquitous language is consistent and unambiguous. Outside, the same word may mean something different entirely.
 
-Think of bounded contexts as **larger-scale versions of the classes we write in OOP**. The same principles apply:
+Bounded contexts are **larger-scale versions of the classes we write in OOP**:
 
 | OOP Class                    | Bounded Context             |
 | ---------------------------- | --------------------------- |
@@ -52,93 +55,7 @@ Think of bounded contexts as **larger-scale versions of the classes we write in 
 | No hidden globals            | No shared database tables   |
 | Testable in isolation        | Testable in isolation       |
 
-### The Mistake: Sharing Too Much
-
-Imagine an e-commerce system. Someone creates a single `Order` class used by everything:
-
-```
-// The monolithic Order
-class Order
-  id: UUID
-  customer: Customer
-  items: OrderItem[]
-  shippingAddress: Address
-  paymentMethod: PaymentMethod
-  total: Money
-  tax: Money
-  discount: Money
-  status: OrderStatus
-  trackingNumber: string?
-  invoiceNumber: string?
-```
-
-The `Order` changes for many reasons:
-
-- Marketing wants to add promotional codes
-- Warehouse needs custom packaging options
-- Finance needs tax breakdowns by jurisdiction
-- Customer support needs cancellation reasons
-
-Every change to any of these concerns forces a change to the `Order` class. This is **high coupling** at the architecture level.
-
-### The Fix: Draw Boundaries
-
-Split into bounded contexts:
-
-```
-Billing Context:
-  Order = { id, items, total, tax, discount, paymentMethod, invoiceNumber }
-
-Shipping Context:
-  Order = { id, items, shippingAddress, trackingNumber, packagingNotes }
-
-CustomerSupport Context:
-  Order = { id, status, cancellationReason, refundStatus }
-```
-
-Each context has its own `Order` type. They share the `id` (and perhaps reference each other), but they do not share the full structure. A change to billing's `Order` does not affect shipping's `Order`.
-
-### The Challenge: Where Do You Draw the Line?
-
-Here is a test: can you assign a single team to own this context?
-
-- **Billing** -- yes, the finance team owns this.
-- **Shipping** -- yes, the logistics team owns this.
-- **OrderManagement** -- maybe, but does it justify a separate team?
-
-If you cannot name a team that would own a context, the boundary might be wrong. Bounded contexts align with organizational boundaries. This is Conway's Law working in your favor.
-
-### Positive Example: Clear Boundaries
-
-```
-UserService:
-  - Owns user identity, authentication, preferences
-  - Database: users table
-  - API: /users/*
-
-NotificationService:
-  - Owns email, push, SMS sending
-  - Database: notifications, templates tables
-  - API: /notifications/*
-  - Depends on: UserService (to look up contact info)
-```
-
-Two teams, two databases, two deployable units. A bug in notifications does not affect user login.
-
-### Negative Example: Leaky Boundaries
-
-```
-OrderService:
-  - Owns orders
-  - Database: orders, order_items, shipping_addresses, invoices, payments
-
-PaymentService:
-  - Owns payments
-  - Database: payments (with foreign key to orders!)
-  - Directly queries orders table for status
-```
-
-This is a distributed monolith. A schema change to `orders` breaks both services. You have not achieved independence; you have achieved complexity without benefit.
+**Test:** Can you assign a single team to own this context? If not, the boundary might be wrong. Bounded contexts align with organizational boundaries.
 
 ---
 
@@ -157,42 +74,13 @@ Everything in a codebase falls into one of two categories:
 
 The contract is simple: **service methods take structures as input and return structures as output.** Services never accept other services as method arguments -- those come through the constructor. Structures never depend on services -- they are inert data.
 
-This separation is what makes the entire architecture testable and composable. Services can be swapped via dependency injection. Structures can be compared, serialised, and asserted against.
-
 See [Stateless OOP and Dependency Injection](../stateless-oop-di/index.md) for the full treatment of this distinction.
 
 ---
 
 ## Records, Principals, and Aggregate Roots
 
-With the two-class distinction established, we now define three levels of structure that appear in every CRUD-oriented domain. These correspond loosely to DDD's value objects, entities, and aggregate roots -- but with important differences.
-
-### The Original DDD Concepts
-
-In traditional Domain-Driven Design:
-
-- **Value Objects** are defined by their attributes. Two `Money(10, USD)` objects are equal because they represent the same value. They have no identity.
-- **Entities** have identity that persists across state changes. User #42 is still User #42 after they change their email.
-- **Aggregate Roots** are consistency boundaries. An `Order` aggregate contains `OrderItem` entities. You never modify an `OrderItem` directly; you go through the `Order` aggregate root, which enforces invariants.
-
-This model works beautifully for complex domains with deep invariants. A banking system needs aggregate roots to enforce that debits and credits balance. A shipping system needs aggregate roots to enforce that items cannot be added to a shipped order.
-
-### Why We Departed
-
-Most CRUD applications do not have deep invariants. They have:
-
-- Forms that create and update records
-- Lists that search and display records
-- Relationships between records that are queried independently
-
-For these use cases, traditional aggregate roots add ceremony without benefit. What we do need is:
-
-1. **A type for creation that excludes the ID** (the ID is generated by the system)
-2. **A type for updates that excludes the ID** (the ID cannot be changed)
-3. **A type for search results that is cheap** (single table, no joins)
-4. **A type for detail views that includes related data** (joins, full picture)
-
-This leads us to a different three-type model: **Records, Principals, and Aggregate Roots**.
+Three levels of structure appear in every CRUD-oriented domain. These correspond loosely to DDD's value objects, entities, and aggregate roots -- but with important differences.
 
 ### Records (Updateable Data)
 
@@ -215,9 +103,58 @@ Records deliberately exclude the identifier because:
 - **At update time**, the ID is passed separately (it cannot be changed)
 - **Identity is not data you change -- it is something you reference**
 
+### Multiple Records per Entity
+
+An entity can have **multiple Records** when its fields have different **rates of change**. Separating records by update frequency improves cache efficiency, reduces optimistic locking conflicts, and clarifies which operations affect which data.
+
+```
+// User has 3 records with different update rates
+
+UserRecord:              // Frequently changed by user
+  displayName: string
+  bio: string
+  avatarUrl: string
+
+UserImmutableRecord:     // Locked at creation, never changes
+  email: string
+  createdAt: timestamp
+
+UserSyncRecord:          // Updated by external sync, infrequent
+  stripeCustomerId: string
+  githubId: string
+  lastSyncAt: timestamp
+```
+
+**Why separate by rate of change:**
+
+| Record Type           | Update Frequency    | Who Changes It    | Example Operations       |
+| --------------------- | ------------------- | ----------------- | ------------------------ |
+| `UserRecord`          | High                | User actions      | Profile edits, settings  |
+| `UserImmutableRecord` | Never (create-only) | System at signup  | Account creation         |
+| `UserSyncRecord`      | Low (periodic)      | External sync job | OAuth sync, billing sync |
+
+The Principal holds all records together:
+
+```
+UserPrincipal:
+  id: uuid
+  record: UserRecord           // Mutable profile data
+  immutable: UserImmutableRecord  // Create-only data
+  sync: UserSyncRecord         // Externally synced data
+```
+
+This separation enables:
+
+- **Targeted updates**: `updateProfile(id, UserRecord)` doesn't touch sync data
+- **Cache efficiency**: Frequently-read data (profile) separate from rarely-read (sync metadata)
+- **Concurrency**: Profile updates don't conflict with sync updates
+- **Clear ownership**: API layer updates `UserRecord`, sync service updates `UserSyncRecord`
+
 ### Principals (Records with Identity)
 
-A Principal is a Record with an ID. It represents the entity as stored in a database.
+A Principal is one or more Records with an ID. It represents the entity as stored in a database.
+
+**Single Record (simple entity):**
 
 ```
 PostPrincipal:
@@ -229,9 +166,19 @@ AuthorPrincipal:
   record: AuthorRecord
 ```
 
-The identity makes a Principal unique even when its record data changes. Post #42 is still post #42 after you edit the title. This is the fundamental distinction between a Record and a Principal.
+**Multiple Records (entity with different update rates):**
 
-Principals are the **primary unit of storage and retrieval**. A database table maps directly to a Principal: the primary key is the `id`, and the remaining columns come from the Record.
+```
+UserPrincipal:
+  id: uuid
+  record: UserRecord           // Mutable profile
+  immutable: UserImmutableRecord  // Create-only
+  sync: UserSyncRecord         // Externally synced
+```
+
+The identity makes a Principal unique even when its record data changes. Post #42 is still post #42 after you edit the title.
+
+Principals are the **primary unit of storage and retrieval**. A database table maps directly to a Principal: the primary key is the `id`, and the remaining columns come from the Record(s).
 
 ### Aggregate Roots (Assembled Views)
 
@@ -247,9 +194,13 @@ Author:                  // Aggregate root for viewing an author
   posts: PostPrincipal[]
 ```
 
-Notice that `Post` and `Author` are two different aggregate roots that reference each other's principals. They are **views** -- shaped by what the consuming service needs.
+`Post` and `Author` are two different aggregate roots that reference each other's principals. They are **views** -- shaped by what the consuming service needs.
 
-### Why This Split Works
+---
+
+## CRUD Mapping (Blessed Path)
+
+With three structure types defined, we can map the five standard CRUD operations to the types they consume and produce.
 
 | Operation  | Input          | Output          | Why?                                               |
 | ---------- | -------------- | --------------- | -------------------------------------------------- |
@@ -258,20 +209,6 @@ Notice that `Post` and `Author` are two different aggregate roots that reference
 | **Create** | `Record`       | `AggregateRoot` | No ID needed -- system generates it                |
 | **Update** | `id`, `Record` | `AggregateRoot` | ID is separate because identity cannot be replaced |
 | **Delete** | `id`           | `void`          | Nothing to return                                  |
-
-**Search returns Principals** because lists do not need related data. Returning Principals keeps search fast with single-table queries.
-
-**Get returns an Aggregate Root** because detail views need the full picture: the post and its author, the order and its line items.
-
-**Create takes a Record** because at creation time, the entity has no identity. The system assigns one.
-
-**Update takes ID and Record separately** to make the contract explicit: identity is immutable, data is mutable.
-
----
-
-## CRUD Mapping (Blessed Path)
-
-With three structure types defined, we can map the five standard CRUD operations to the types they consume and produce.
 
 ### Service Interface Example
 
@@ -307,9 +244,19 @@ Before calling a domain complete, verify:
 - [ ] **Ubiquitous language.** Every concept has a precise, unambiguous name. No overloaded terms.
 - [ ] **Bounded contexts.** Each module owns its types. No cross-module imports of internal models. Boundaries align with team ownership.
 - [ ] **Two classes.** Services have behaviour and receive dependencies via constructor. Structures are pure data passed as arguments.
-- [ ] **Records defined.** Every entity has a Record containing its updateable fields (no ID).
-- [ ] **Principals defined.** Every entity has a Principal combining its identity with its Record.
+- [ ] **Records defined.** Every entity has at least one Record containing its updateable fields (no ID). Entities with different update rates may have multiple Records.
+- [ ] **Principals defined.** Every entity has a Principal combining its identity with its Record(s). Single Record for simple entities, multiple Records for entities with different update rates.
 - [ ] **Aggregate roots defined.** Every entity that needs related data has an Aggregate Root assembling the relevant Principals.
 - [ ] **CRUD mapping followed.** Search returns Principals. Get/Create/Update return Aggregate Roots. Delete returns nothing.
 - [ ] **No identity in Records.** The `id` field lives in the Principal, never in the Record.
 - [ ] **Aggregate roots as views.** Different services may define different aggregate roots for the same Principal, each shaped to its needs.
+
+---
+
+## Language-Specific Details
+
+See language-specific guides for implementation details:
+
+- [TypeScript/Bun](./languages/typescript.md)
+- [C#/.NET](./languages/csharp.md)
+- [Go](./languages/go.md)

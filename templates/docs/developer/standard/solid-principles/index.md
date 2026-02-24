@@ -6,33 +6,6 @@ This article builds on the foundational ideas in [Software Design Philosophy](..
 
 ---
 
-## How These Principles Emerged
-
-These principles were not handed down from a mountain. They were discovered through pain.
-
-Consider a team building an e-commerce system. At first, everything is simple: one `OrderService` that handles everything. It works. The team ships fast. Then features accumulate:
-
-- The marketing team wants to add coupon codes
-- The warehouse needs to know about shipments
-- Finance needs different tax calculations per region
-- Customer support needs to view order history differently
-
-Each feature touches the same `OrderService`. Each release carries risk. A bug in tax calculation breaks shipment notifications. A change to the email template breaks the payment flow. The team becomes afraid to touch the code.
-
-The team notices patterns:
-
-- Some changes happen together. Every time marketing changes coupon logic, they also change the discount calculator. These belong together.
-- Some changes are independent. Tax calculation and email formatting never change for the same reason. These should be separate.
-- Some code depends on stable things. The database schema changes rarely. The email template changes often. They should not be tightly coupled.
-
-SOLID is the formalization of these observations. It tells us how to draw boundaries so that:
-
-- Things that change together live together (cohesion)
-- Things that change independently are separated (coupling)
-- The boundaries are explicit and visible (locality)
-
----
-
 ## S -- Single Responsibility Principle (SRP)
 
 > A class should have only one reason to change.
@@ -49,85 +22,9 @@ There are two ways to think about cohesion:
 
 Rate of change is easier to observe -- you can measure it from git history. But reason to change is the underlying truth. We observe rate of change because it reveals reason to change. If two pieces of code change on the same commits over and over, they probably share a reason to change.
 
-### Example: The CustomerService
-
-Imagine a CLI application that manages customers stored in a JSON file. You build a `CustomerService` with CRUD operations plus a render method:
-
-```
-class CustomerService
-  get(id) -> Customer
-  delete(id) -> void
-  create(record) -> Customer
-  render(customer) -> ASCIITable
-```
-
-`get`, `delete`, and `create` change for domain lifecycle reasons. `render` changes for display reasons. These are different reasons to change, so split them:
-
-```
-class CustomerService
-  get(id) -> Customer
-  delete(id) -> void
-  create(record) -> Customer
-
-class CustomerRenderer
-  render(customer) -> ASCIITable
-```
-
-Notice that `get` returns a generic `Customer` structure, not a pre-formatted ASCII string. By returning a plain structure, each consumer decides how to present the data -- the CLI renderer formats it as an ASCII table, a web controller serializes it as JSON, a test asserts on the fields.
-
-### The Three-Stage Evolution: From Complexity to Clarity
-
-**Stage 1: A big, complex function.**
-
-```
-class PasswordChecker
-  check(password) -> bool
-    hasAlpha = false
-    hasSpecial = false
-    for char in password:
-      if char.isLetter():
-        hasAlpha = true
-      if "!@#$%".contains(char):
-        hasSpecial = true
-    return hasAlpha && hasSpecial
-```
-
-**Stage 2: Break it into private helpers.** Cleaner, but private methods are hidden from tests, hidden from the constructor, and locked in:
-
-```
-class PasswordChecker
-  check(password) -> bool
-    return hasAlpha(password) && hasSpecial(password)
-
-  private hasAlpha(s) -> bool
-    return s.matchesPattern("[a-zA-Z]")
-
-  private hasSpecial(s) -> bool
-    return s.matchesPattern("[!@#$%]")
-```
-
-Stage 2 is a trap. It looks better but is still a violation.
-
-**Stage 3: Extract helpers as injectable services.**
-
-```
-class StringChecker
-  matchesPattern(s, pattern) -> bool
-    return s.matches(pattern)
-
-class PasswordChecker
-  constructor(checker: StringChecker)
-
-  check(password) -> bool
-    return checker.matchesPattern(password, "[a-zA-Z]")
-        && checker.matchesPattern(password, "[!@#$%]")
-```
-
-Now `StringChecker` is independently testable, reusable, and swappable. The dependency is explicit in the constructor.
-
 ### The Absolute Rule: No Private Methods
 
-AtomiCloud code has **zero private methods**. Every private method is a hidden dependency. Every hidden dependency is a testing obstacle. The three-stage evolution always ends at Stage 3.
+AtomiCloud code has **zero private methods**. Every private method is a hidden dependency. Every hidden dependency is a testing obstacle. Every helper should be extracted as an injectable service.
 
 ---
 
@@ -158,57 +55,6 @@ function addEvenMoreOpened(a, b, combine)
 Functional style is **too powerful and too free**. When every argument can be a function of functions, anyone can do anything in any order. OOP provides a **more restricted framework** -- interfaces standardize what is opened up and how it is opened. `IVersionControl` tells you something that `(string) -> void` does not.
 
 Methods should always take value-types as arguments. If a method needs behavior, the constructor should receive another object -- an interface with a name, a contract, and a testable identity.
-
-### The Git Wrapper: A Class Is Born
-
-**Stage 1: Standalone functions** with repeated `gitBinary`, `repoPath` params:
-
-```
-function commit(gitBinary, repoPath, message)
-  run(gitBinary, "-C", repoPath, "commit", "-m", message)
-
-function push(gitBinary, repoPath)
-  run(gitBinary, "-C", repoPath, "push")
-```
-
-**Stage 2: Group into a class.** The repeated parameters become constructor config:
-
-```
-class Git
-  constructor(gitBinary: string, repoPath: string)
-
-  commit(message: string) -> void
-  push() -> void
-  pull() -> void
-```
-
-An object is born -- from OCP, not from abstract "OOP design."
-
-**Stage 3: Separate concerns if needed** (SRP):
-
-```
-class GitRepo
-  constructor(gitBinary: string, repoPath: string)
-  commit(message: string) -> void
-  log() -> CommitLog[]
-
-class GitRemote
-  constructor(gitBinary: string, repoPath: string, remote: string)
-  push() -> void
-  pull() -> void
-```
-
-**Stage 4: Extract an interface** for swappability:
-
-```
-interface IVersionControl
-  commit(message: string) -> void
-  push() -> void
-
-class Git implements IVersionControl
-  constructor(gitBinary: string, repoPath: string)
-  ...
-```
 
 ### Classes as Config/DI Containers
 
@@ -241,41 +87,7 @@ class Enricher
 
 LSP is a **constraint** on how you implement interfaces. Every implementation must honor the full contract -- including implicit behavioral promises.
 
-### The Square/Rectangle Problem
-
-```
-class Rectangle
-  setWidth(w)
-  setHeight(h)
-  area() -> width * height
-
-class Square extends Rectangle
-  setWidth(w)
-    width = w
-    height = w   // forced: must keep sides equal
-  setHeight(h)
-    width = h
-    height = h
-```
-
-The calling code:
-
-```
-r = factory.createShape()     // could be Rectangle or Square
-r.setWidth(5)
-r.setHeight(8)
-print(r.area())               // expects 40, gets 64 if Square
-```
-
-The caller expects `setWidth` and `setHeight` to be independent operations. `Square` violates this implicit contract.
-
-### Concepts vs Instances
-
-Classes model **concepts**, not instances. Dogs and humans interact closely at the instance level -- they live together, are basically family. But the _concept_ of a dog and the _concept_ of a human are far apart. No one would model `Human extends Dog`.
-
-The concept of a square has the invariant that all sides are equal. The concept of a rectangle has the invariant that width and height are independent. Different behavioral contracts, even though every instance of a square is geometrically a rectangle.
-
-Design-time hierarchies are about **behavioral contracts**. Runtime instances are about **data conformance**. Do not conflate them.
+Classes model **concepts**, not instances. Design-time hierarchies are about **behavioral contracts**. Runtime instances are about **data conformance**. Do not conflate them.
 
 AtomiCloud discourages subclassing (`extends`). Implement interfaces instead.
 
@@ -336,8 +148,6 @@ class OrderService
     return Database.query(...)        // hidden dependency on Database
 ```
 
-To understand `processOrder`, you must read the method body. The signature `(order)` tells you nothing about the collaborators. Both `Logger` and `Database` are invisible.
-
 ```
 // RIGHT -- visible and fixed
 class OrderService
@@ -350,46 +160,11 @@ class OrderService
     return this.db.query(...)
 ```
 
-Now the constructor tells you everything: this service needs a logger and a database. You can understand the dependencies without reading a single line of method code. And because the references are fixed, you know they won't change during the object's lifetime.
-
 ---
 
-## No Singletons: Why OOP Is The Way
+## No Singletons
 
-There is a common criticism of Java and C#: "everything must be a class." We see this as the **point**. If everything is a class, everything is injectable. If everything is injectable, everything is swappable. Nothing is hardwired.
-
-### The Problem with Global and Static Methods
-
-```
-static Logger.log("User logged in")    // decree from the universe
-```
-
-A static method cuts through the DI tree. You cannot swap it for a silent logger in tests, a structured logger in production, or a per-module logger. Ever.
-
-```
-class UserService
-  constructor(logger: ILogger)
-
-  login(user: User) -> Result<Session>
-    this.logger.log("User logged in")  // request to a collaborator
-```
-
-`static Logger.log()` is an invocation of a global. `this.logger.log()` is a message to a collaborator you control.
-
-### Singletons Are Globals in Disguise
-
-A singleton is a global variable wearing a tuxedo. The fix: create the instance once at the entry point and inject it everywhere.
-
-### Can You Find a Concept That Never Needs a Second Instance?
-
-- **Logger.** Debug, production, per-module, silent for tests.
-- **Clock.** Frozen for tests, fast-forward for scheduling, wall clock for prod.
-- **Random.** Seeded for deterministic tests, cryptographic for production.
-- **Database.** Read replica, test fixtures, multi-tenant connections.
-- **PaymentProcessor.** Stripe and PayPal. Mock for tests. Sandbox for staging.
-- **TetrisApp.** Split-screen multiplayer? AI training with 1000 instances?
-
-Even the universe -- physicists theorize about multiverses. If the universe might have a second instance, your `DatabaseConnection` definitely can.
+If everything is a class, everything is injectable. If everything is injectable, everything is swappable. Nothing is hardwired.
 
 ### Rules
 
@@ -397,16 +172,28 @@ Even the universe -- physicists theorize about multiverses. If the universe migh
 - **No singletons.** Create instances at the entry point and inject them.
 - **No global state.** Values flow through the dependency tree.
 
+A static method cuts through the DI tree. You cannot swap it for a silent logger in tests, a structured logger in production, or a per-module logger.
+
+```
+// WRONG -- static global
+static Logger.log("User logged in")    // decree from the universe
+
+// RIGHT -- injected collaborator
+class UserService
+  constructor(logger: ILogger)
+
+  login(user: User) -> Result<Session>
+    this.logger.log("User logged in")  // request to a collaborator
+```
+
 ---
 
-## Temporal Coupling: A Warning
+## Temporal Coupling
 
 Temporal coupling occurs when the order of operations matters, but the code does not enforce it. This is a subtle form of hidden dependency.
 
-### Example 1: The Builder That Requires Order
-
 ```
-// WRONG -- temporal coupling
+// WRONG -- temporal coupling: must call setTable before build
 class QueryBuilder
   private table: string?
   private columns: string[]?
@@ -421,48 +208,17 @@ class QueryBuilder
     // crashes if table or columns not set!
 ```
 
-The caller must remember to call `setTable` before `build`. The method signatures do not enforce this. A new developer will forget.
-
 ```
-// RIGHT -- no temporal coupling
+// RIGHT -- no temporal coupling: constructor enforces required state
 class QueryBuilder
   constructor(table: string, columns: string[])
 
   build() -> Query
-    // always works -- constructor enforced the required state
-```
-
-### Example 2: The Two-Phase Initialize
-
-```
-// WRONG -- must call initialize() before use
-class Connection
-  private conn: DbConnection?
-
-  constructor(config: Config)
-    this.config = config
-
-  initialize()
-    this.conn = DbConnection.connect(this.config)
-
-  query(sql: string) -> Result
-    // crashes if initialize() not called!
-```
-
-```
-// RIGHT -- ready to use after construction
-class Connection
-  constructor(config: Config)
-    this.conn = DbConnection.connect(config)
-
-  query(sql: string) -> Result
     // always works
 ```
 
-### Example 3: The Service That Depends on Prior Calls
-
 ```
-// WRONG -- addItem before calculateTotal
+// WRONG -- stateful service with temporal coupling
 class OrderService
   private items: Item[] = []
 
@@ -473,16 +229,12 @@ class OrderService
     return sum(this.items)
 ```
 
-The result of `calculateTotal()` depends on how many times `addItem()` was called before it. This is temporal coupling.
-
 ```
 // RIGHT -- all data flows through parameters
 class OrderService
   calculateTotal(items: Item[]) -> Money
     return sum(items)
 ```
-
-Now `calculateTotal` is a pure function. Same inputs, same outputs. No temporal coupling.
 
 ---
 
@@ -502,6 +254,14 @@ Now `calculateTotal` is a pure function. Same inputs, same outputs. No temporal 
 - [ ] **No temporal coupling:** Does the order of method calls not matter? Are objects ready to use after construction?
 
 ---
+
+## Language-Specific Details
+
+See language-specific guides for implementation details:
+
+- [TypeScript/Bun](./languages/typescript.md)
+- [C#/.NET](./languages/csharp.md)
+- [Go](./languages/go.md)
 
 ## Related Articles
 

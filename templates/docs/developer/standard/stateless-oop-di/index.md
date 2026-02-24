@@ -36,7 +36,7 @@ Structures are the things that flow through your system. They cross network boun
 - No methods that perform side effects.
 - No references to services or adapters.
 - Create new instances instead of modifying existing ones.
-- Define them with the most data-oriented construct your language provides: `interface`/`type` in TypeScript, `record` in C#, `struct` in Go, `struct` with `derive` in Rust.
+- Define them with the most data-oriented construct your language provides: `interface`/`type` in TypeScript, `record` in C#, `struct` in Go.
 
 ### Objects: Pure Behavior
 
@@ -181,82 +181,7 @@ The injectable version can be tested with a mock database, decorated with tracin
 
 ---
 
-## 4. Factories
-
-A factory is a service that creates other objects. Factories are useful when construction logic becomes non-trivial -- when there are multiple implementations to choose from, or when configuration determines what gets built.
-
-### Factories Should Be Dumb
-
-A factory's job is to simplify construction, not to implement business logic.
-
-```
-// Factory -- chooses implementation based on config
-class PaymentProcessorFactory:
-  private readonly config: PaymentConfig
-  private readonly stripeClient: IStripeClient
-  private readonly paypalClient: IPaypalClient
-
-  constructor(config: PaymentConfig, stripeClient: IStripeClient, paypalClient: IPaypalClient):
-    this.config = config
-    this.stripeClient = stripeClient
-    this.paypalClient = paypalClient
-
-  create() -> IPaymentProcessor:
-    if this.config.provider == "stripe":
-      return new StripePaymentProcessor(this.stripeClient)
-    else:
-      return new PaypalPaymentProcessor(this.paypalClient)
-```
-
-### What Factories Should NOT Do
-
-- **NOT implement business logic.** The factory decides _which_ implementation to create, not _how_ it behaves.
-- **NOT create behavior-types dynamically.** Factories return interfaces, not ad-hoc objects with embedded logic.
-- **NOT hide complex initialization behind a "smart" constructor.** If construction requires 20 steps, those steps should be explicit.
-
-```
-// WRONG -- factory with embedded business logic
-class OrderFactory:
-  createOrder(items: Item[]) -> Order:
-    order = new Order()
-    order.items = items
-    order.total = items.sum(i => i.price) * 1.1  // tax calculation in factory!
-    order.status = "pending"
-    return order
-
-// RIGHT -- factory delegates to domain
-class OrderFactory:
-  createOrder(items: Item[]) -> Order:
-    return Order.create(items)  // Order.create handles business rules
-```
-
-### Factories May Resolve Polymorphism
-
-The legitimate use of a factory is choosing between implementations:
-
-```
-interface INotificationSender
-  send(to: string, message: string) -> Result<void, SendError>
-
-class EmailSender implements INotificationSender ...
-class SmsSender implements INotificationSender ...
-class PushSender implements INotificationSender ...
-
-class NotificationSenderFactory:
-  constructor(config: NotificationConfig, email: EmailSender, sms: SmsSender, push: PushSender)
-
-  create(channel: NotificationChannel) -> INotificationSender:
-    match channel:
-      Channel.Email => this.email
-      Channel.SMS => this.sms
-      Channel.Push => this.push
-```
-
-The factory does not implement sending logic. It only resolves _which_ sender to use.
-
----
-
-## 5. Entry Point Wiring
+## 4. Entry Point Wiring
 
 All services are created at the application entry point -- the "big bang" of the dependency graph. This is the only place where constructors are called for services and adapters.
 
@@ -294,7 +219,7 @@ This pattern applies regardless of whether you wire manually (as in TypeScript o
 
 ---
 
-## 6. Quick Checklist
+## 5. Quick Checklist
 
 **Structures vs Objects:**
 
@@ -316,13 +241,6 @@ This pattern applies regardless of whether you wire manually (as in TypeScript o
 - [ ] No static methods that contain business logic.
 - [ ] Interfaces defined for all external dependencies (repositories, HTTP clients, file systems).
 
-**Factories:**
-
-- [ ] Factories only simplify construction, not implement business logic.
-- [ ] Factories return interfaces, not concrete types.
-- [ ] Factories may choose between implementations (polymorphism resolution).
-- [ ] Factories do NOT create behavior-types or embed complex logic.
-
 **Entry Point Wiring:**
 
 - [ ] All services constructed at the application entry point (composition root).
@@ -343,7 +261,32 @@ This pattern applies regardless of whether you wire manually (as in TypeScript o
 
 See language-specific guides for implementation details:
 
-- [TypeScript/Bun](./typescript.md)
-- [C#/.NET](./csharp.md)
-- [Go](./go.md)
-- [Rust](./rust.md)
+- [TypeScript/Bun](./languages/typescript.md)
+- [C#/.NET](./languages/csharp.md)
+- [Go](./languages/go.md)
+
+## Folder Structure
+
+Domain services follow the bounded context structure from [Domain-Driven Design](../domain-driven-design/index.md):
+
+```
+lib/                        # Domain layer
+  <bounded-context>/
+    <entity>/
+      structures.ts|cs|go   # Record, Principal
+      interfaces.ts|cs|go   # IXxxService, IXxxRepository
+      service.ts|cs|go      # XxxService implementation
+      errors.ts|cs|go       # XxxNotFound, XxxValidationError
+
+adapters/                   # Adapter layer
+  <bounded-context>/
+    <entity>/
+      api/
+        controller.ts|cs|go
+        req.ts|cs|go
+        res.ts|cs|go
+        mapper.ts|cs|go
+      data/
+        repo.ts|cs|go
+        mapper.ts|cs|go
+```
