@@ -1,3 +1,10 @@
+## [1.2.0](https://github.com/AtomiCloud/shared/compare/v1.1.0...v1.2.0) (2026-02-24)
+
+
+### ✨ Features ✨
+
+* datetime, validation and utility skill ([97e3126](https://github.com/AtomiCloud/shared/commit/97e312661113650bc4c08961d8de3e4b459392b8))
+
 ## [1.1.0](https://github.com/AtomiCloud/shared/compare/v1.0.0...v1.1.0) (2026-02-24)
 
 
