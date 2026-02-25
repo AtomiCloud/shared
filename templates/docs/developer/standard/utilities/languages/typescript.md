@@ -5,13 +5,19 @@
 Lodash provides utility functions for common programming tasks. Use tree-shakeable imports.
 
 ```bash
-bun add lodash
+bun add lodash-es
 bun add -D @types/lodash
 ```
 
 ```typescript
-// Tree-shakeable imports (recommended)
-import { groupBy, sortBy, uniqBy } from 'lodash';
+// Tree-shakeable imports with lodash-es (ESM build - recommended)
+import { groupBy, sortBy, uniqBy } from 'lodash-es';
+
+// Alternative: per-method imports (also tree-shakeable)
+// import groupBy from 'lodash/groupBy';
+
+// Note: Named imports from 'lodash' are CommonJS/UMD and aren't reliably
+// tree-shakeable with Bun. Use 'lodash-es' or per-method paths instead.
 ```
 
 ## Collections
@@ -45,7 +51,7 @@ const grouped = groupBy(users, 'role');
 //   user: [{ name: 'Bob', ... }] }
 
 // With function
-const grouped = groupBy(users, u => u.role);
+const groupedByFn = groupBy(users, u => u.role);
 ```
 
 ### sortBy
@@ -59,7 +65,7 @@ const sorted = sortBy(users, ['role', 'name']);
 // Sorts by role, then by name
 
 // With function
-const sorted = sortBy(users, [u => u.role, u => u.name.toLowerCase()]);
+const sortedByFn = sortBy(users, [u => u.role, u => u.name.toLowerCase()]);
 ```
 
 ### orderBy
@@ -80,7 +86,7 @@ Find elements:
 import { find, findLast } from 'lodash';
 
 const user = find(users, { role: 'admin' });
-const user = find(users, u => u.age > 30);
+const userByAge = find(users, u => u.age > 30);
 const last = findLast(users, { active: true });
 ```
 
@@ -94,7 +100,7 @@ import { uniq, uniqBy } from 'lodash';
 const unique = uniq([1, 2, 1, 3, 2]); // [1, 2, 3]
 
 const uniqueUsers = uniqBy(users, 'email');
-const uniqueUsers = uniqBy(users, u => u.email);
+const uniqueUsersByFn = uniqBy(users, u => u.email);
 ```
 
 ### flatten, flattenDeep
@@ -271,8 +277,9 @@ const debouncedSearch = debounce((query: string) => {
   fetchResults(query);
 }, 300);
 
-input.addEventListener('input', e => {
-  debouncedSearch(e.target.value);
+input.addEventListener('input', (e: Event) => {
+  const target = e.currentTarget as HTMLInputElement;
+  debouncedSearch(target.value);
 });
 
 // Cancel pending execution

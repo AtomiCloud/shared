@@ -78,17 +78,16 @@ err := validate.VarWithValue(password, confirmPassword, "eqfield")
 
 ### Number Validators
 
-| Tag           | Description              |
-| ------------- | ------------------------ |
-| `min=0`       | Minimum value            |
-| `max=100`     | Maximum value            |
-| `gte=0`       | Greater than or equal    |
-| `gt=0`        | Greater than             |
-| `lte=100`     | Less than or equal       |
-| `lt=100`      | Less than                |
-| `oneof=1 2 3` | One of the values        |
-| `unique`      | Unique elements (slice)  |
-| `monotonic`   | Monotonically increasing |
+| Tag           | Description             |
+| ------------- | ----------------------- |
+| `min=0`       | Minimum value           |
+| `max=100`     | Maximum value           |
+| `gte=0`       | Greater than or equal   |
+| `gt=0`        | Greater than            |
+| `lte=100`     | Less than or equal      |
+| `lt=100`      | Less than               |
+| `oneof=1 2 3` | One of the values       |
+| `unique`      | Unique elements (slice) |
 
 ### Comparison Validators
 
@@ -101,7 +100,7 @@ err := validate.VarWithValue(password, confirmPassword, "eqfield")
 | `ltfield=FieldName`     | Less than another field    |
 | `ltefield=FieldName`    | Less than or equal         |
 | `eqcsfield=Inner.Field` | Equal to nested field      |
-| `necfield=Inner.Field`  | Not equal to nested field  |
+| `necsfield=Inner.Field` | Not equal to nested field  |
 
 ### Slice/Map Validators
 
@@ -336,10 +335,15 @@ func ValidateRequest(validate *validator.Validate, req interface{}) mux.Middlewa
 ### Gin Integration
 
 ```go
-import "github.com/gin-gonic/gin/binding"
+import (
+    "github.com/gin-gonic/gin/binding"
+    "github.com/go-playground/validator/v10"
+)
 
-// In setup
-binding.Validator = v10.New()
+// In setup - get existing validator and register custom validations
+if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+    v.RegisterValidation("custom_tag", myValidationFunc)
+}
 
 // In handler
 func (h *Handler) CreateUser(c *gin.Context) {

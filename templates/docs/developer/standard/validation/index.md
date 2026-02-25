@@ -2,7 +2,7 @@
 
 Validation ensures data meets expected constraints before processing. This guide defines validation patterns, when to use them, and how to implement them across AtomiCloud projects.
 
-This article builds on [Three-Layer Architecture](../three-layer-architecture/index.md) and [Error Handling](../functional-practices/index.md). Validation happens at layer boundaries, and validation errors follow error handling conventions.
+This article builds on [Three-Layer Architecture](../three-layer-architecture/index.md) and [Error Handling](../functional-practices/index.md). Validation happens at layer boundaries, and validation errors follow error-handling conventions.
 
 ---
 
@@ -73,7 +73,7 @@ type User = z.infer<typeof UserSchema>; // { name: string; age: number }
 
 Validate all external input at the API boundary (controllers, adapters):
 
-```
+```text
 External World → [Validate] → Controller → Domain
 ```
 

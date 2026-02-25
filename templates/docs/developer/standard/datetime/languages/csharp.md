@@ -55,7 +55,7 @@ specific.LocalDateTime; // DateTime in local zone
 var later = specific.AddHours(2);
 
 // Convert timezone
-var eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+var eastern = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
 var inEastern = TimeZoneInfo.ConvertTime(specific, eastern);
 ```
 
@@ -142,8 +142,11 @@ Timezone information and conversion.
 ```csharp
 // Get timezone
 var utc = TimeZoneInfo.Utc;
-var eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+var eastern = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
 var local = TimeZoneInfo.Local;
+
+// Note: IANA IDs (e.g., "America/New_York") require .NET 6+ with ICU on Windows.
+// Windows-only platforms may need Windows IDs (e.g., "Eastern Standard Time").
 
 // List all timezones
 var allZones = TimeZoneInfo.GetSystemTimeZones();

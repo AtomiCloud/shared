@@ -65,7 +65,7 @@ Date only (no time component).
 ```go
 // Create
 date := carbon.Date{Year: 2024, Month: 3, Day: 15}
-date := carbon.DateFromCarbon(carbon.Now())
+dateFromNow := carbon.DateFromCarbon(carbon.Now())
 
 // Components
 date.Year   // 2024
@@ -83,7 +83,7 @@ Time only (no date component).
 ```go
 // Create
 t := carbon.Time{Hour: 14, Minute: 30, Second: 0}
-t := carbon.TimeFromCarbon(carbon.Now())
+tFromNow := carbon.TimeFromCarbon(carbon.Now())
 
 // Components
 t.Hour    // 14
@@ -106,7 +106,7 @@ dt := carbon.DateTime{
 }
 
 // From Carbon
-dt := carbon.DateTimeFromCarbon(carbon.Now())
+dtFromNow := carbon.DateTimeFromCarbon(carbon.Now())
 
 // To Carbon
 c := dt.ToCarbon()
@@ -119,8 +119,8 @@ Duration of time (standard library).
 ```go
 // Create
 duration := 2 * time.Hour
-duration := 30 * time.Minute
-duration := 1500 * time.Millisecond
+duration30m := 30 * time.Minute
+duration1500ms := 1500 * time.Millisecond
 
 // Components
 duration.Hours()         // float64 hours
@@ -133,7 +133,7 @@ d, _ := time.ParseDuration("2h30m")
 
 // Add to Carbon
 later := carbon.Now().AddDuration("2h30m")
-later := carbon.Now().AddMinutes(30)
+later30m := carbon.Now().AddMinutes(30)
 ```
 
 ## Timezone Handling

@@ -30,13 +30,15 @@ function groupBy<T>(items: T[], key: (item: T) => string): Record<string, T[]> {
 With a utility library:
 
 ```typescript
-import { groupBy } from 'lodash';
+import { groupBy } from 'lodash-es';
 const grouped = groupBy(items, item => item.category);
 ```
 
 ### Reduce Tests
 
-Utility libraries are battle-tested. You don't need to test:
+Utility libraries are battle-tested. Don't retest library internals; still write tests for your business logic and integration behavior.
+
+You don't need to test that the library correctly implements:
 
 - Sorting algorithms
 - Debounce/throttle behavior

@@ -147,7 +147,7 @@ A critical design decision—timezone belongs at the right level of your domain:
 
 **Example - Alarm Done Right:**
 
-```
+```yaml
 User {
   id: "user-123"
   timezone: "America/New_York"  // ← TZ lives here
@@ -194,8 +194,8 @@ During DST "spring forward," 2:00 AM becomes 3:00 AM—some times don't exist. D
 // WRONG - May fail during DST transition
 var nextDay = dateTime.AddDays(1);
 
-// RIGHT - Use UTC and convert for display
-var nextDay = instant.Plus(Duration.FromHours(24));
+// RIGHT - Use UTC to avoid DST issues
+var nextDay = DateTimeOffset.UtcNow.AddHours(24);
 ```
 
 ### 3. Birthday Timezone Problem

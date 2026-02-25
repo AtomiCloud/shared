@@ -34,13 +34,13 @@ var concatenated = words.Aggregate((a, b) => a + " " + b);
 ### First, FirstOrDefault, Single
 
 ```csharp
-var first = users.First();                    // Throws if empty
+var first = users.First();                         // Throws if empty
 var firstActive = users.First(u => u.IsActive);
-var first = users.FirstOrDefault();           // Returns null/default if empty
-var firstActive = users.FirstOrDefault(u => u.IsActive);
+var firstOrDefault = users.FirstOrDefault();       // Returns null/default if empty
+var firstActiveDefault = users.FirstOrDefault(u => u.IsActive);
 
-var single = users.Single(u => u.Id == id);   // Throws if not exactly one
-var single = users.SingleOrDefault(u => u.Id == id);
+var single = users.Single(u => u.Id == id);        // Throws if not exactly one
+var singleDefault = users.SingleOrDefault(u => u.Id == id);
 ```
 
 ### GroupBy
@@ -127,7 +127,7 @@ var contains = users.Contains(specificUser);
 ```csharp
 var first10 = users.Take(10);
 var skip10 = users.Skip(10);
-var page = users.Skip((page - 1) * size).Take(size);
+var pagedUsers = users.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 
 // TakeWhile, SkipWhile
 var upTo100 = numbers.TakeWhile(n => n < 100);
@@ -167,11 +167,11 @@ if (dict.TryGetValue("key", out var value))
 ### Object Initialization
 
 ```csharp
-// With expression (non-destructive mutation)
-var updated = user with { Name = "New Name" };
-
 // Record initialization
 var user = new User { Name = "Alice", Email = "a@b.com" };
+
+// With expression (non-destructive mutation)
+var updated = user with { Name = "New Name" };
 ```
 
 ### Anonymous Types
