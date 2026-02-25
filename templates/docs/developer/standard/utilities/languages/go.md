@@ -24,19 +24,20 @@ found := slices.ContainsFunc(items, func(x T) bool { return x.Active })
 ### Sort
 
 ```go
-// Sort ordered slices (int, float, string)
+// Sort ordered slices (int, float, string) - ascending
 slices.Sort(nums)
-slices.Sort(nums) // ascending
+
+// Custom sort with comparison function
 slices.SortFunc(items, func(a, b Item) int {
     return cmp.Compare(a.Name, b.Name)
 })
 
-// Sort with stable sort
+// Sort with stable sort (preserves order of equal elements)
 slices.SortStableFunc(items, func(a, b Item) int {
     return cmp.Compare(a.Priority, b.Priority)
 })
 
-// Reverse sort
+// Reverse sort (sort first, then reverse)
 slices.Sort(nums)
 slices.Reverse(nums)
 ```
@@ -101,18 +102,22 @@ largest := slices.Max(nums)
 ### Keys, Values
 
 ```go
-// Get keys
-keys := maps.Keys(m) // Returns iterator (Go 1.23+)
-keys := []string{}
+// Get keys (Go 1.23+ returns iterator)
+keys := slices.Collect(maps.Keys(m)) // Collect iterator to slice
+
+// Or iterate directly
 for k := range maps.Keys(m) {
-    keys = append(keys, k)
+    fmt.Println(k)
 }
 
-// Get values
-values := maps.Values(m)
+// Get values (Go 1.23+ returns iterator, not []V)
+// Note: maps.Values returns iter.Seq[V], not a slice
+values := slices.Collect(maps.Values(m))
 
-// Collect to slice (Go 1.23+)
-keys := slices.Collect(maps.Keys(m))
+// Or iterate directly
+for v := range maps.Values(m) {
+    fmt.Println(v)
+}
 ```
 
 ### Clone, Copy

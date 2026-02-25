@@ -26,23 +26,23 @@ invocation:
 
 ### Common Operations
 
-| Operation | TypeScript (Lodash) | C# (LINQ)        | Go (slices/lo)    |
-| --------- | ------------------- | ---------------- | ----------------- |
-| Filter    | `filter`            | `Where`          | `lo.Filter`       |
-| Map       | `map`               | `Select`         | `lo.Map`          |
-| Reduce    | `reduce`            | `Aggregate`      | `lo.Reduce`       |
-| Find      | `find`              | `FirstOrDefault` | `lo.Find`         |
-| Group     | `groupBy`           | `GroupBy`        | `lo.GroupBy`      |
-| Sort      | `sortBy`            | `OrderBy`        | `slices.SortFunc` |
-| Unique    | `uniq`              | `Distinct`       | `lo.Uniq`         |
-| Flatten   | `flatten`           | `SelectMany`     | `lo.Flatten`      |
-| Chunk     | `chunk`             | `Chunk`          | `lo.Chunk`        |
-| Contains  | `includes`          | `Contains`       | `slices.Contains` |
-| Keys      | `keys`              | `dict.Keys` †    | `maps.Keys`       |
-| Values    | `values`            | `dict.Values` †  | `maps.Values`     |
+| Operation | TypeScript (Lodash) | C# (LINQ)        | Go (slices/lo)      |
+| --------- | ------------------- | ---------------- | ------------------- |
+| Filter    | `filter`            | `Where`          | `lo.Filter`         |
+| Map       | `map`               | `Select`         | `lo.Map`            |
+| Reduce    | `reduce`            | `Aggregate`      | `lo.Reduce`         |
+| Find      | `find`              | `FirstOrDefault` | `lo.Find`           |
+| Group     | `groupBy`           | `GroupBy`        | `lo.GroupBy`        |
+| Sort      | `sortBy`            | `OrderBy`        | `slices.SortFunc`   |
+| Unique    | `uniq`              | `Distinct`       | `lo.Uniq`           |
+| Flatten   | `flatten`           | `SelectMany`     | `lo.Flatten`        |
+| Chunk     | `chunk`             | `Chunk`          | `lo.Chunk`          |
+| Contains  | `includes`          | `Contains`       | `slices.Contains`   |
+| Keys      | `keys`              | `dict.Keys` †    | `maps.Keys`         |
+| Values    | `values`            | `dict.Values` †  | `maps.Values`       |
+| Pick/Omit | `pick`/`omit`       | -                | `lo.Pick`/`lo.Omit` |
 
 † Dictionary properties, not LINQ operators
-| Pick/Omit | `pick`/`omit` | - | `lo.Pick`/`lo.Omit` |
 
 ## Core Principles
 

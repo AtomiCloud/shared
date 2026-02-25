@@ -79,8 +79,8 @@ var tomorrow = date.AddDays(1);
 var nextMonth = date.AddMonths(1);
 
 // Parsing
-var parsed = DateOnly.Parse("2024-03-15");
-var parsed = DateOnly.ParseExact("03/15/2024", "MM/dd/yyyy");
+var parsedIso = DateOnly.Parse("2024-03-15");
+var parsedExact = DateOnly.ParseExact("03/15/2024", "MM/dd/yyyy");
 
 // Formatting
 date.ToString("yyyy-MM-dd"); // "2024-03-15"
@@ -117,22 +117,22 @@ Duration of time.
 
 ```csharp
 // Create
-var duration = TimeSpan.FromHours(2);
-var duration = TimeSpan.FromMinutes(30);
-var duration = new TimeSpan(2, 30, 0); // 2h 30m 0s
+var durationHours = TimeSpan.FromHours(2);
+var durationMinutes = TimeSpan.FromMinutes(30);
+var durationHms = new TimeSpan(2, 30, 0); // 2h 30m 0s
 
 // Components
-duration.TotalHours;   // 2.5
-duration.TotalMinutes; // 150
-duration.Hours;        // 2
-duration.Minutes;      // 30
+durationHms.TotalHours;   // 2.5
+durationHms.TotalMinutes; // 150
+durationHms.Hours;        // 2
+durationHms.Minutes;      // 30
 
 // Operations
-var doubled = duration + duration;
-var negated = duration.Negate();
+var doubled = durationHms + durationHms;
+var negated = durationHms.Negate();
 
 // Add to DateTime
-var deadline = DateTime.UtcNow.Add(duration);
+var deadline = DateTime.UtcNow.Add(durationHms);
 ```
 
 ### TimeZoneInfo

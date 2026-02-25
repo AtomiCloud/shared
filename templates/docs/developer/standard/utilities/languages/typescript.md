@@ -5,7 +5,7 @@
 Lodash provides utility functions for common programming tasks. Use tree-shakeable imports.
 
 ```bash
-bun add lodash-es
+bun add lodash-es lodash
 bun add -D @types/lodash
 ```
 
@@ -204,10 +204,11 @@ original.a.b; // [1, 2, 3] (unchanged)
 For basic operations, use native:
 
 ```typescript
-const keys = Object.keys(obj);
-const values = Object.values(obj);
-const entries = Object.entries(obj);
-const obj = Object.fromEntries(entries);
+const obj = { a: 1, b: 2, c: 3 };
+const keys = Object.keys(obj); // ['a', 'b', 'c']
+const values = Object.values(obj); // [1, 2, 3]
+const entries = Object.entries(obj); // [['a', 1], ['b', 2], ['c', 3]]
+const reconstructed = Object.fromEntries(entries); // { a: 1, b: 2, c: 3 }
 ```
 
 ### get, set, has

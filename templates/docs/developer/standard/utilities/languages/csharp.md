@@ -208,7 +208,7 @@ var message = $"Hello, {name}!";
 
 ```csharp
 var formatted = string.Format("{0:N2}", 1234.56); // "1,234.56"
-var formatted = $"{amount:C}"; // Currency format
+var formattedCurrency = $"{amount:C}"; // Currency format
 ```
 
 ## Aggregations
@@ -264,12 +264,12 @@ var list = users.Where(u => u.IsActive).ToList();
 
 ```csharp
 // Query syntax (less common now)
-var query = from u in users
-            where u.IsActive
-            select u.Name;
+var querySyntax = from u in users
+                  where u.IsActive
+                  select u.Name;
 
 // Method syntax (preferred)
-var query = users
+var methodSyntax = users
     .Where(u => u.IsActive)
     .Select(u => u.Name);
 ```

@@ -223,7 +223,7 @@ var now = DateTimeOffset.UtcNow;
 
 ## Storage vs Display
 
-**Always store dates/times in UTC.** Convert to local time only for display.
+**Always store timestamped instants (Instants/DateTimes) in UTC.** Convert to local time only for display. Note: Date-only and Time-only values (birthdays, store hours) are exempt—store those as local or domain-specific types without UTC conversion.
 
 | Storage | Display                         |
 | ------- | ------------------------------- |

@@ -23,19 +23,19 @@ A specific point in time (UTC).
 const now = Temporal.Now.instant();
 
 // From ISO string
-const instant = Temporal.Instant.from('2024-03-15T14:30:00Z');
+const instantFromString = Temporal.Instant.from('2024-03-15T14:30:00Z');
 
 // From epoch milliseconds
-const instant = Temporal.Instant.fromEpochMilliseconds(1710510600000);
+const instantFromEpochMs = Temporal.Instant.fromEpochMilliseconds(1710510600000);
 
 // Convert to string
-instant.toString(); // '2024-03-15T14:30:00Z'
+instantFromString.toString(); // '2024-03-15T14:30:00Z'
 
 // Add duration
-const later = instant.add({ hours: 2 });
+const later = instantFromString.add({ hours: 2 });
 
 // Compare
-instant.equals(otherInstant);
+instantFromString.equals(otherInstant);
 Temporal.Instant.compare(instant1, instant2); // -1, 0, or 1
 ```
 
@@ -45,22 +45,22 @@ A calendar date without time or timezone.
 
 ```typescript
 // Create
-const date = Temporal.PlainDate.from('2024-03-15');
-const date = new Temporal.PlainDate(2024, 3, 15);
+const dateFromStr = Temporal.PlainDate.from('2024-03-15');
+const dateFromCtor = new Temporal.PlainDate(2024, 3, 15);
 
 // Components
-date.year; // 2024
-date.month; // 3
-date.day; // 15
-date.dayOfWeek; // 5 (Friday)
+dateFromStr.year; // 2024
+dateFromStr.month; // 3
+dateFromStr.day; // 15
+dateFromStr.dayOfWeek; // 5 (Friday)
 
 // Operations
-const tomorrow = date.add({ days: 1 });
-const lastMonth = date.subtract({ months: 1 });
+const tomorrow = dateFromStr.add({ days: 1 });
+const lastMonth = dateFromStr.subtract({ months: 1 });
 
 // Difference
 const other = Temporal.PlainDate.from('2024-04-20');
-const diff = date.until(other); // Duration
+const diff = dateFromStr.until(other); // Duration
 ```
 
 ### PlainTime
@@ -69,17 +69,17 @@ A time of day without date or timezone.
 
 ```typescript
 // Create
-const time = Temporal.PlainTime.from('14:30:00');
-const time = new Temporal.PlainTime(14, 30, 0);
+const timeFromStr = Temporal.PlainTime.from('14:30:00');
+const timeFromCtor = new Temporal.PlainTime(14, 30, 0);
 
 // Components
-time.hour; // 14
-time.minute; // 30
-time.second; // 0
+timeFromStr.hour; // 14
+timeFromStr.minute; // 30
+timeFromStr.second; // 0
 
 // Operations
-const later = time.add({ hours: 2 });
-const rounded = time.round({ smallestUnit: 'minute', roundingMode: 'floor' });
+const later = timeFromStr.add({ hours: 2 });
+const rounded = timeFromStr.round({ smallestUnit: 'minute', roundingMode: 'floor' });
 ```
 
 ### PlainDateTime
@@ -115,8 +115,8 @@ const tokyo = now.withTimeZone('Asia/Tokyo');
 const instant = now.toInstant();
 
 // From instant with timezone
-const instant = Temporal.Instant.from('2024-03-15T14:30:00Z');
-const zoned = instant.toZonedDateTimeISO('America/New_York');
+const instantForZoned = Temporal.Instant.from('2024-03-15T14:30:00Z');
+const zoned = instantForZoned.toZonedDateTimeISO('America/New_York');
 ```
 
 ### Duration
@@ -125,16 +125,16 @@ An amount of time.
 
 ```typescript
 // Create
-const duration = Temporal.Duration.from({ hours: 2, minutes: 30 });
-const duration = Temporal.Duration.from('PT2H30M');
+const durationFromObj = Temporal.Duration.from({ hours: 2, minutes: 30 });
+const durationFromStr = Temporal.Duration.from('PT2H30M');
 
 // Components
-duration.hours; // 2
-duration.minutes; // 30
+durationFromObj.hours; // 2
+durationFromObj.minutes; // 30
 
 // Operations
-const doubled = duration.add(duration);
-const negated = duration.negated();
+const doubled = durationFromObj.add(durationFromObj);
+const negated = durationFromObj.negated();
 
 // Add to instant
 const instant = Temporal.Now.instant();
