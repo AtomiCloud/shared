@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/AtomiCloud/shared/compare/v1.2.0...v1.2.1) (2026-02-25)
+
+
+### 🐛 Bug Fixes 🐛
+
+* incorrect issues ([58f48a8](https://github.com/AtomiCloud/shared/commit/58f48a8bb795d72f1978e4f9a73de59587ca9d94))
+
 ## [1.2.0](https://github.com/AtomiCloud/shared/compare/v1.1.0...v1.2.0) (2026-02-24)
 
 
