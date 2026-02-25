@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/AtomiCloud/shared/compare/v1.2.1...v1.2.2) (2026-02-25)
+
+
+### 🐛 Bug Fixes 🐛
+
+* coderabbitai reviews ([206e968](https://github.com/AtomiCloud/shared/commit/206e9682eb99fadf24ec73e77969efb748d6db2d))
+
 ## [1.2.1](https://github.com/AtomiCloud/shared/compare/v1.2.0...v1.2.1) (2026-02-25)
 
 
