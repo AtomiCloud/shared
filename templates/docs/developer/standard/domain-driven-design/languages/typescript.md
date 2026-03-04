@@ -2,7 +2,7 @@
 
 ## Folder Structure
 
-```
+```text
 src/
   lib/                    # Pure domain code
     blog/                 # Bounded context
@@ -21,8 +21,16 @@ src/
         interfaces.ts
         service.ts
   adapters/               # Impure code
-    repos/
-    controllers/
+    blog/
+      post/
+        api/
+          controller.ts
+          req.ts
+          res.ts
+          mapper.ts
+        data/
+          repo.ts
+          mapper.ts
 ```
 
 ## Record (Pure Data, No Identity)
@@ -35,9 +43,11 @@ interface PostRecord {
   tags: string[];
 }
 
+import { Temporal } from '@js-temporal/polyfill';
+
 interface AuthorRecord {
   name: string;
-  dateOfBirth: Date;
+  dateOfBirth: Temporal.PlainDate;
 }
 ```
 
@@ -58,14 +68,14 @@ interface UserRecord {
 // Locked at creation, never changes
 interface UserImmutableRecord {
   email: string;
-  createdAt: Date;
+  createdAt: Temporal.Instant;
 }
 
 // Updated by external sync, infrequent
 interface UserSyncRecord {
   stripeCustomerId: string;
-  githubId: string;
-  lastSyncAt: Date;
+  githubId?: string; // Optional — not all users have linked GitHub
+  lastSyncAt: Temporal.Instant;
 }
 ```
 
@@ -96,7 +106,7 @@ interface UserPrincipal {
 }
 ```
 
-## Aggregate Root (Assembled View)
+## Model (Assembled View)
 
 ```typescript
 interface Post {

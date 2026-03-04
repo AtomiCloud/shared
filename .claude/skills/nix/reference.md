@@ -4,7 +4,7 @@ Complete technical reference for the modular Nix flake architecture using the ni
 
 ## File Structure
 
-```
+```text
 nix/
 ├── packages.nix   # Package aggregation from registries
 ├── env.nix        # Environment group definitions

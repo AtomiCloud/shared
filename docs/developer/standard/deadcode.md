@@ -3,8 +3,6 @@ id: deadcode
 title: Deadcode Detection and Cleanup
 ---
 
-# Deadcode Detection and Cleanup
-
 This document describes the workflow for detecting and removing unused code.
 
 ## Workflow

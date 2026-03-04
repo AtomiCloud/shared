@@ -1,177 +1,168 @@
 # Date/Time in Go
 
-## Library: `dromara/carbon/v2` + `time.Duration`
+## Important: No True DateOnly/Time-only types
 
-Use Carbon for rich date/time operations. Use `time.Duration` for durations.
+Unlike C# (`DateOnly`, `TimeOnly`) and TypeScript (`Temporal.PlainDate`, `Temporal.PlainTime`), Go has no native date-only or time-only types. The `time` package only provides `time.Time` which represents a full point in time.
+
+> ⚠️ **Critical**: The `carbon` library's `Date`, `Time`, and `DateTime` types are **type aliases for formatting**, not distinct storage types. All parsing operations return `*Carbon`, not separate date/time types.
+
+## What You Actually get
+
+| Concept       | C#             | TypeScript              | Go                 |
+| ------------- | -------------- | ----------------------- | ------------------ |
+| **Date only** | `DateOnly` ✅  | `Temporal.PlainDate` ✅ | ❌ **None**        |
+| **Time only** | `TimeOnly` ✅  | `Temporal.PlainTime` ✅ | ❌ **None**        |
+| **Duration**  | `TimeSpan`     | `Temporal.Duration`     | `time.Duration` ✅ |
+| **Timezone**  | `TimeZoneInfo` | IANA string             | `*time.Location`   |
+
+## Library: Standard Library Only
+
+Use `time.Time` from the standard library for most cases. Use `time.Duration` for durations.
 
 ```bash
-go get github.com/dromara/carbon/v2
+go get
 ```
 
-```go
-import (
-    "github.com/dromara/carbon/v2"
-    "time"
-)
-```
+## No third-party library needed
+
+---
 
 ## Types
 
-### carbon.Carbon
+### time.Time (Standard Library — Primary Type)
 
-A point in time with timezone support. The primary type for most operations.
+A point in time with timezone support. **This is your only option** for datetime storage.
 
 ```go
-// Create
-now := carbon.Now()                    // Local time
-utc := carbon.Now(carbon.UTC)          // UTC
-specific := carbon.Parse("2024-03-15 14:30:00")
+// Current time
+now := time.Now()           // Local time
+utcNow := time.Now().UTC()  // UTC
 
-// From time.Time
-c := carbon.CreateFromTime(time.Now())
+// Specific time
+specific := time.Date(2024, 3, 15, 14, 30, 0, time.UTC)
+
+// Parsing
+t, err := time.Parse(time.RFC3339, "2024-03-15T14:30:00Z")
+t, err := time.Parse("2006-01-02", "2024-03-15")  // Date-only string, but type is still time.Time
+t, err := time.Parse("15:04:05", "2024-03-15T14:30:00") // Time-only string, but type is still time.Time
 
 // Components
-c.Year()        // 2024
-c.Month()       // 3
-c.Day()         // 15
-c.Hour()        // 14
-c.Minute()      // 30
-c.Second()      // 0
-c.Timezone()    // "UTC" or local
+t.Year()
+t.Month()
+t.Day()
+t.Hour()
+t.Minute()
+t.Second()
+t.Nanosecond()
+t.Weekday()
+t.YearDay()
+t.IsZero()
 
 // Operations
-tomorrow := c.AddDays(1)
-nextMonth := c.AddMonths(1)
-nextWeek := c.AddWeeks(1)
+tomorrow := t.AddDate(0, 0, 1)
+nextMonth := t.AddDate(0, 1, 0)
+nextYear := t.AddDate(1, 0, 0)
+inTwoHours := t.Add(2 * time.Hour)
+in30Minutes := t.Add(30 * time.Minute)
+in1500ms := t.Add(1500 * time.Millisecond)
+
+in2us := t.Add(2 * time.Microsecond)
 
 // Comparison
-c.Gt(other)     // c > other
-c.Lt(other)     // c < other
-c.Eq(other)     // c == other
-c.IsToday()
-c.IsWeekend()
+t.Before(other)
+t.After(other)
+t.Equal(other)
 
-// Formatting
-c.ToDateTimeString()      // "2024-03-15 14:30:00"
-c.ToDateString()          // "2024-03-15"
-c.ToTimeString()          // "14:30:00"
-c.ToIso8601String()       // "2024-03-15T14:30:00Z"
+// Formatting (Go's reference time: Mon Jan 2 15:04:05 MST 2006)
+t.Format("2006-01-02 15:04:05")  // "2024-03-15 14:30:00"
+t.Format("2006-01-02")           // "2024-03-15"
+t.Format("15:04:05")             // "14:30:00"
+t.Format(time.RFC3339)           // "2024-03-15T14:30:00Z"
+t.Format(time.RFC1123)           // "Fri, 15 Mar 2024 14:30:00 UTC"
+
+// Unix timestamp
+unix := t.Unix()           // seconds
+unixMilli := t.UnixMilli() // milliseconds
+unixMicro := t.UnixMicro() // microseconds
+unixNano := t.UnixNano()   // nanoseconds
+
+// From Unix
+fromUnix := time.Unix(1710510600, 0)
+fromUnixMilli := time.UnixMilli(1710510600000)
 ```
 
-### carbon.Date
+### Reference Time Format
 
-Date only (no time component).
+Go uses a specific reference time instead of format strings like `yyyy-MM-dd`:
+
+```text
+Reference: Mon Jan 2 15:04:05 MST 2006
+           |   |   |  |  |  |   |  |
+           |   |   |  |  |  |   +-- Year (2006)
+           |   |   |  |  |  |   +----- Month (Jan/01)
+           |   |   |  |  |  |   +--------- Day name (Mon/Monday)
+           |   |   |  |  |  |   +------------ Hour (15 = 3 PM, 03 = 3 AM)
+           |   |   |  |  |  |   +--------------- Minute (04)
+           |   |   |  |  |  |   +------------------ Second (05)
+           |   |   |  |  |  |   +------ Month day (2)
+           |   |   |  |  |  +-------------------------- Month name (Jan/January)
+```
+
+Common formats:
 
 ```go
-// Create
-date := carbon.Date{Year: 2024, Month: 3, Day: 15}
-dateFromNow := carbon.DateFromCarbon(carbon.Now())
-
-// Components
-date.Year   // 2024
-date.Month  // 3
-date.Day    // 15
-
-// To Carbon
-c := date.ToCarbon()
+"2006-01-02"                    // Date only (e.g., birthday)
+"2006-01-02 15:04:05"             // Date and time (e.g., meeting time)
+"15:04:05"                     // Time only (e.g., store hours)
+time.RFC3339                   // ISO 8601 / RFC 3339
+time.RFC1123                   // HTTP headers
 ```
 
-### carbon.Time
-
-Time only (no date component).
+### Converting Between Types
 
 ```go
-// Create
-t := carbon.Time{Hour: 14, Minute: 30, Second: 0}
-tFromNow := carbon.TimeFromCarbon(carbon.Now())
+// time.Time to string (for display)
+formatted := t.Format("2006-01-02")
 
-// Components
-t.Hour    // 14
-t.Minute  // 30
-t.Second  // 0
+// String to time.Time
+parsed, err := time.Parse("2006-01-02", "2024-03-15")
 
-// To Carbon
-c := t.ToCarbon()
+// time.Time to Unix timestamp
+unix := t.Unix()
+
+// Unix timestamp to time.Time
+fromUnix := time.Unix(unix, )
 ```
 
-### carbon.DateTime
-
-Date + time (no timezone).
+### Timezone Handling
 
 ```go
-// Create
-dt := carbon.DateTime{
-    Year: 2024, Month: 3, Day: 15,
-    Hour: 14, Minute: 30, Second: 0,
-}
+// Load timezone
+loc, err := time.LoadLocation("America/New_York")
 
-// From Carbon
-dtFromNow := carbon.DateTimeFromCarbon(carbon.Now())
+// Get current time in timezone
+nyTime := time.Now().In(loc)
 
-// To Carbon
-c := dt.ToCarbon()
+// Convert time to different timezone
+utcTime := time.Now().UTC()
+nyTime := utcTime.In(loc)  // Same instant, different timezone display
+
+fmt.Println(nyTime.Format("2006-01-02 15:04:05"))
 ```
 
-### time.Duration
+### JSON Serialization
 
-Duration of time (standard library).
-
-```go
-// Create
-duration := 2 * time.Hour
-duration30m := 30 * time.Minute
-duration1500ms := 1500 * time.Millisecond
-
-// Components
-duration.Hours()         // float64 hours
-duration.Minutes()       // float64 minutes
-duration.Seconds()       // float64 seconds
-duration.Milliseconds()  // int64 milliseconds
-
-// Parse from string
-d, _ := time.ParseDuration("2h30m")
-
-// Add to Carbon
-later := carbon.Now().AddDuration("2h30m")
-later30m := carbon.Now().AddMinutes(30)
-```
-
-## Timezone Handling
-
-```go
-// Create with timezone
-ny := carbon.Now(carbon.NewYork)       // America/New_York
-tokyo := carbon.Now(carbon.Tokyo)      // Asia/Tokyo
-utc := carbon.Now(carbon.UTC)          // UTC
-
-// Convert timezone
-local := carbon.Now()
-utc := local.SetTimezone(carbon.UTC)
-
-// Custom timezone
-tz, _ := carbon.LoadLocation("America/Los_Angeles")
-la := carbon.Now(tz)
-```
-
-## JSON Serialization
-
-Carbon types implement `json.Marshaler` and `json.Unmarshaler`.
+### Standard Library
 
 ```go
 type Event struct {
-    Timestamp carbon.Carbon `json:"timestamp"`
-    Date      carbon.Date   `json:"date"`
-    Time      carbon.Time   `json:"time"`
+    Timestamp time.Time `json:"timestamp"`
 }
 
-// Marshal
-event := Event{
-    Timestamp: carbon.Now(),
-    Date:      carbon.Date{Year: 2024, Month: 3, Day: 15},
-    Time:      carbon.Time{Hour: 14, Minute: 30, Second: 0},
-}
+// time.Time serializes to RFC 3339 by default
+event := Event{Timestamp: time.Now()}
 data, _ := json.Marshal(event)
-// {"timestamp":"2024-03-15T14:30:00Z","date":"2024-03-15","time":"14:30:00"}
+// {"timestamp":"2024-03-15T14:30:00Z"}
 
 // Unmarshal
 var parsed Event
@@ -182,20 +173,25 @@ json.Unmarshal(data, &parsed)
 
 ```go
 type CustomTime struct {
-    carbon.Carbon
+    time.Time
 }
 
 func (ct CustomTime) MarshalJSON() ([]byte, error) {
-    return []byte(`"` + ct.ToIso8601String() + `"`), nil
+    return []byte(`"` + ct.Format(time.RFC3339) + `"`)
 }
 
 func (ct *CustomTime) UnmarshalJSON(data []byte) error {
-    s := string(data)
-    s = strings.Trim(s, `"`)
-    ct.Carbon = carbon.Parse(s)
+    s := strings.Trim(string(data), `"`)
+    t, err := time.Parse(time.RFC3339, s)
+    if err != nil {
+        return err
+    }
+    ct.Time = time.Time{}
     return nil
 }
 ```
+
+---
 
 ## Best Practices
 
@@ -203,56 +199,195 @@ func (ct *CustomTime) UnmarshalJSON(data []byte) error {
 
 ```go
 // Store in UTC
-timestamp := carbon.Now(carbon.UTC)
+timestamp := time.Now().UTC()
 
 // Display in user's timezone
-userTime := timestamp.SetTimezone(carbon.NewYork)
-fmt.Println(userTime.ToDateTimeString())
+loc, _ := time.LoadLocation("America/New_York")
+userTime := timestamp.In(loc)
+fmt.Println(userTime.Format("2006-01-02 15:04:05"))
 ```
 
-### Use carbon.Date for Birthdays
+### Date-Only Semantics: Use `time.Time` at Midnight UTC
 
 ```go
 type Person struct {
     Name     string
-    Birthday carbon.Date
+    Birthday time.Time // Convention: always midnight UTC
 }
 
-person := Person{
-    Name:     "Alice",
-    Birthday: carbon.Date{Year: 1990, Month: 3, Day: 15},
-}
+// Create
+birthday := time.Date(1990, 3, 15, 0, 0, time.UTC)
+
+// Format for display
+fmt.Println(birthday.Format("2006-01-02")) // "1990-03-15"
+
+// Store in database (most ORms handle time.Time natively)
+db.Create(&Person{Name: "Alice", Birthday: birthday})
 
 // Calculate age
-today := carbon.Now()
-birthday := person.Birthday.ToCarbon()
-age := today.Year() - birthday.Year()
-if birthday.SetYear(today.Year()).Gt(today) {
-    age--
+func calculateAge(birthday time.Time) int {
+    now := time.Now().UTC()
+    age := now.Year() - birthday.Year()
+    if birthday.AddDate(age, 0, 0).After(now) {
+        age--
+    }
+    return age
 }
 ```
 
-### Use carbon.Time for Store Hours
+### Time-Only Semantics: Use String or Custom Type
 
 ```go
 type StoreHours struct {
-    OpensAt  carbon.Time
-    ClosesAt carbon.Time
+    OpensAt  string // "09:00:00"
+    ClosesAt string // "17:00:00"
 }
 
-hours := StoreHours{
-    OpensAt:  carbon.Time{Hour: 9, Minute: 0, Second: 0},
-    ClosesAt: carbon.Time{Hour: 17, Minute: 0, Second: 0},
+// Parse when needed
+t, _ := time.Parse("15:04:05", hours.OpensAt)
+    if err != nil {
+        return nil, err
+    }
+
+// Convert to display
+func formatTime(minutes int) string {
+    return fmt.Sprintf("%02d:%02d", minutes/60, minutes%60)
 }
-
-now := carbon.Now()
-currentTime := carbon.Time{Hour: now.Hour(), Minute: now.Minute(), Second: now.Second()}
-
-isOpen := currentTime.ToCarbon().Gte(hours.OpensAt.ToCarbon()) &&
-          currentTime.ToCarbon().Lte(hours.ClosesAt.ToCarbon())
 ```
 
-### Use time.Duration for Timeouts
+### Custom Types (Optional)
+
+```go
+// DateOnly wraps time.Time for true date-only semantics
+type DateOnly struct {
+    Year  int
+    Month time.Month
+    Day   int
+}
+
+func (d DateOnly) String() string {
+    return fmt.Sprintf("%04d-%02d", d.Year, d.Month, d.Day)
+}
+
+func (d DateOnly) ToTime() time.Time {
+    return time.Date(d.Year, d.Month, d.Day, 0, 0, 0, time.UTC)
+}
+
+func ParseDateOnly(s string) (DateOnly, error) {
+    t, err := time.Parse("2006-01-02", s)
+    if err != nil {
+        return DateOnly{}, err
+    }
+    return DateOnly{Year: t.Year(), Month: t.Month(), Day: t.Day()}, nil
+}
+
+// TimeOnly stores hour and minute
+type TimeOnly struct {
+    Hour   int
+    Minute int
+    Second int
+}
+
+func (t TimeOnly) String() string {
+    return fmt.Sprintf("%02d:%02d:%02d", t.Hour, t.Minute, t.Second)
+}
+
+func (t TimeOnly) ToTime() time.Time {
+    // Set date to epoch, time component is zero
+    return time.Date(0, 0, 0, time.Hour(t.Hour), time.Minute(t.Minute), time.Second(t.Second), 0, time.UTC)
+}
+```
+
+---
+
+## Database Integration
+
+### SQL (database.sql)
+
+```go
+// Most Go SQL drivers support time.Time natively
+type User struct {
+    ID        int
+    Name      string
+    CreatedAt time.Time
+}
+```
+
+### GORM (Popular ORM)
+
+GORM models use `time.Time` fields with `gorm:"type:time.Time" tags.
+
+```go
+type User struct {
+    gorm.Model
+    User
+}
+
+func (User) TableName() string {
+    return "users"
+}
+func (User) BeforeCreate(tx *gorm.DB) error {
+    tx.AutoMigrate(&User{})
+    return nil
+}
+
+func (u *User) AfterFind(tx *gorm.DB) (rows []*User, error) {
+    var users []User
+    for _, row := range users {
+        users = append(User{
+            Name: row.Name,
+            CreatedAt: row.CreatedAt,
+        })
+    }
+    return users
+}
+```
+
+---
+
+## Common Patterns
+
+### Difference Between Dates
+
+```go
+start := time.Date(2024, 3, 15, 0, 0, 0, time.UTC)
+end := time.Date(2024, 3, 20, 0, 0, 0, time.UTC)
+
+duration := end.Sub(start)
+days := int(duration.Hours() / 24)
+hours := int(duration.Minutes())
+duration := end.Sub(start).Hours()
+```
+
+### Start/End of Period
+
+```go
+t := time.Now()
+
+startOfDay := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, time.UTC)
+endOfDay := t.AddDate(0, 0, 1)
+
+startOfWeek := time.Date(t.Year(), t.Month(), t.Day() - int(t.Weekday()), 0, 0, 0, time.UTC).StartOfMonth := t.AddDate(0, 1, 0)
+startOfYear := t.AddDate(1, 0, 0)
+
+```
+
+### Is Workday/Weekend
+
+```go
+t := time.Now()
+
+switch t.Weekday() {
+case time.Saturday, | time.Sunday:
+    if t.Hour() >= 9 && t.Hour() < 17 {
+        // Workday
+    default:
+        // Weekend
+    }
+}
+```
+
+### Context with Timeout
 
 ```go
 const timeout = 30 * time.Second
@@ -264,56 +399,17 @@ defer cancel()
 deadline := time.Now().Add(timeout)
 ```
 
-## Common Patterns
+---
 
-### Difference Between Dates
+## Summary
 
-```go
-start := carbon.Parse("2024-03-15")
-end := carbon.Parse("2024-03-20")
+| Feature         | `time.Time`           |
+| --------------- | --------------------- |
+| Date arithmetic | `AddDate()`           |
+| Comparison      | `Before()`, `After()` |
+| Formatting      | `Format()`            |
+| JSON            | RFC 3339              |
+| IsWeekend       | Manual                |
+| StartOfDay      | Manual                |
 
-days := end.DiffInDays(start)          // 5
-hours := end.DiffInHours(start)        // 120
-duration := end.DiffAsDuration(start)  // time.Duration
-```
-
-### Start/End of Period
-
-```go
-c := carbon.Now()
-
-startOfDay := c.StartOfDay()
-endOfDay := c.EndOfDay()
-startOfWeek := c.StartOfWeek()
-endOfWeek := c.EndOfWeek()
-startOfMonth := c.StartOfMonth()
-endOfMonth := c.EndOfMonth()
-```
-
-### Is Workday/Weekend
-
-```go
-c := carbon.Now()
-
-if c.IsWeekend() {
-    // Weekend logic
-}
-
-if c.IsWorkday() {
-    // Workday logic
-}
-```
-
-## Comparison with Standard Library
-
-| Feature         | `time.Time`          | `carbon.Carbon`             |
-| --------------- | -------------------- | --------------------------- |
-| Date arithmetic | Manual (AddDate)     | Fluent (AddDays, AddMonths) |
-| Comparison      | Before(), After()    | Gt(), Lt(), Eq() + more     |
-| Formatting      | Format("2006-01-02") | ToDateString(), etc.        |
-| Timezone        | In(loc)              | SetTimezone()               |
-| JSON            | RFC 3339 only        | Multiple formats            |
-| IsWeekend       | Manual check         | Built-in                    |
-| StartOfDay      | Manual               | Built-in                    |
-
-Use `time.Time` for simple cases. Use Carbon when you need rich operations.
+Use `time.Time` for simple cases. Use the approaches in this document for richer operations.

@@ -18,7 +18,7 @@
 
 version="$1"
 
-set -eou pipefail
+set -euo pipefail
 
 onExit() {
   rc="$?"

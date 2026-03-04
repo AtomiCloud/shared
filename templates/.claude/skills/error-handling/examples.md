@@ -12,7 +12,7 @@ See language-specific examples in the documentation:
 
 ### Total Function
 
-```
+```text
 // PARTIAL — lies about its type
 function divide(a, b) -> int:
   if b == 0: throw DivisionByZeroError
@@ -26,6 +26,6 @@ function divide(a, b) -> Result<int, DivisionError>:
 
 ### Error Mapping Between Layers
 
-```
+```text
 Data Layer Error  →  Domain Error  →  Problem Details (API layer)
 ```

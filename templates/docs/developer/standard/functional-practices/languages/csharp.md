@@ -20,23 +20,35 @@ var updated = user with { Name = "New Name" };
 
 ## Pure Functions
 
-Instance methods are pure when all members are readonly. No static methods.
+Instance methods are pure when all members are readonly.
 
 ```csharp
-// Pure instance method — all members readonly
+// GOOD — instance method, injectable, testable
 public class NameFormatter
 {
     private readonly string _suffix;  // readonly → method is pure
 
+    public NameFormatter(string suffix)
+    {
+        _suffix = suffix;
+    }
+
     public string Format(string first, string last) => $"{first} {last} {_suffix}";
 }
 
-// Impure — reads clock (external state)
-public class TimestampFormatter
+// BAD — static methods are hard to mock/test
+// AVOID: private is bad, static is bad, private static is horrible
+public static class NameHelper
 {
-    public string Format(string name) => $"{name} at {DateTime.UtcNow}";
+    public static string Format(string first, string last) => $"{first} {last}";
 }
 ```
+
+**AtomiCloud Convention:**
+
+- **Instance methods** — preferred for injectable, testable pure logic
+- **Static methods** — avoid; hard to mock, creates hidden dependencies
+- **Private static** — especially bad; combines worst of both worlds
 
 **Rule:** Instance methods are pure if all class members are readonly and the method has no side effects.
 
@@ -57,7 +69,7 @@ public class UserNotFound(string id)
 
 ## Folder Structure
 
-```
+```text
 {Service}.Domain/       # Pure class library — entities, interfaces, value objects
 {Service}.App/          # ASP.NET/Console — controllers, repos, mappers, DI wiring
 {Service}.UnitTest/     # Unit tests + functional tests

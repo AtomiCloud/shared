@@ -8,7 +8,7 @@ This Nix configuration uses a **modular flake architecture** with separate files
 
 ## Quick Reference
 
-```
+```text
 nix/
 ├── packages.nix   # Aggregate packages from registries
 ├── env.nix        # Group packages by purpose
@@ -137,7 +137,7 @@ export API_KEY=secret
 
 ## Data Flow
 
-```
+```text
 Registries (nixpkgs, unstable, custom)
            ↓
     packages.nix (aggregate)

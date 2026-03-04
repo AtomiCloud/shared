@@ -6,6 +6,8 @@ FluentValidation provides a fluent interface for building strongly-typed validat
 
 ```bash
 dotnet add package FluentValidation
+dotnet add package FluentValidation.DependencyInjectionExtensions  # for AddValidatorsFromAssemblyContaining
+# Note: FluentValidation.AspNetCore is deprecated and not recommended for new projects
 ```
 
 ```csharp
@@ -57,15 +59,15 @@ if (!result.IsValid)
 
 ```csharp
 RuleFor(x => x.Name)
-    .NotEmpty()           // not null, empty, or whitespace
-    .NotNull()            // not null
+    .NotEmpty()           // not null, empty, or whitespace (supersedes NotNull)
     .Length(2, 100)       // between 2 and 100 chars
     .MinimumLength(2)     // at least 2 chars
     .MaximumLength(100)   // at most 100 chars
     .Matches(@"^\d{5}$")  // regex match
-    .EmailAddress()       // email format
+    .EmailAddress()       // email format (naive: only checks for '@' not at start/end — use email confirmation flows for real validation)
     .CreditCard()         // credit card format
-    .Url();               // URL format
+    .Must(url => Uri.TryCreate(url, UriKind.Absolute, out _))
+        .WithMessage("'{PropertyName}' is not a valid URL."); // URL format
 ```
 
 ### Number Validators
@@ -86,7 +88,7 @@ RuleFor(x => x.Age)
 ```csharp
 RuleFor(x => x.Tags)
     .NotEmpty().WithMessage("At least one tag required")
-    .Must(tags => tags.Count <= 10).WithMessage("Maximum 10 tags allowed");
+    .Must(tags => tags.Count() <= 10).WithMessage("Maximum 10 tags allowed");
 
 // Validate each element
 RuleForEach(x => x.Items)
@@ -116,8 +118,12 @@ RuleFor(x => x.Discount)
 ### Dependent Rules
 
 ```csharp
+// Password is always required
 RuleFor(x => x.Password)
-    .NotEmpty().WithMessage("Password is required")
+    .NotEmpty().WithMessage("Password is required");
+
+// Password match only checked when password is provided
+RuleFor(x => x.Password)
     .Equal(x => x.ConfirmPassword).WithMessage("Passwords must match")
     .When(x => !string.IsNullOrEmpty(x.Password));
 ```
@@ -279,24 +285,13 @@ public class UsersController : ControllerBase
 }
 ```
 
-### Automatic Validation Filter
-
-```csharp
-// Program.cs
-builder.Services.AddFluentValidationAutoValidation();
-
-// Controller - validation happens automatically
-[HttpPost]
-public IActionResult Create([FromBody] CreateUserRequest request)
-{
-    // Only reached if validation passes
-    return Ok();
-}
-```
-
 ### Result Pattern Integration
 
+> **Note:** The Result type used here is a placeholder — the specific result library is not yet decided.
+> Adapt `Result`, `Result.Ok()`, `Result.Fail()`, and `ValidationError` to your project's result type.
+
 ```csharp
+// Imaginary/placeholder — adapt to your Result library (FluentResults, CSharpFunctionalExtensions, ErrorOr, etc.)
 public static class ValidationResultExtensions
 {
     public static Result<T> ToResult<T>(this ValidationResult result, T value)

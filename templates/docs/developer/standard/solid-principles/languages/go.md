@@ -1,8 +1,10 @@
 # SOLID Principles in Go
 
+> **Note:** Code examples below are pseudocode for illustration purposes. For brevity, some implementation details are omitted.
+
 ## Folder Structure
 
-```
+```text
 lib/                      # Domain layer
   {bounded-context}/
     {domain}/
@@ -14,15 +16,19 @@ adapters/                 # Adapter layer
 ## Single Responsibility (SRP)
 
 ```go
-// GOOD — separated
-type UserValidator struct{}
-func (v *UserValidator) Validate(record UserRecord) error { /* ... */ }
+// GOOD — separated, depends on interface
+type UserValidator interface {
+    Validate(record UserRecord) error
+}
+
+type userServiceValidator struct{} // concrete implementation
+func (v *userServiceValidator) Validate(record UserRecord) error { /* ... */ }
 
 type UserService struct {
     repo      UserRepository
-    validator *UserValidator
+    validator UserValidator // interface, not concrete type
 }
-func NewUserService(repo UserRepository, v *UserValidator) *UserService {
+func NewUserService(repo UserRepository, v UserValidator) *UserService {
     return &UserService{repo: repo, validator: v}
 }
 ```
@@ -51,7 +57,7 @@ Verified by functional tests — same test suite against all implementations.
 
 ```go
 type Reader interface {
-    FindById(ctx context.Context, id string) (*User, error)
+    FindById(ctx context.Context, id string) (*UserPrincipal, error)
 }
 
 type Writer interface {

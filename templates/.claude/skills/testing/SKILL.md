@@ -20,7 +20,7 @@ invocation:
 
 | Level           | Scope                        | Box       | Speed   | Coverage Goal                          |
 | --------------- | ---------------------------- | --------- | ------- | -------------------------------------- |
-| **Unit**        | Single class/function        | White-box | Fast    | 100% code coverage                     |
+| **Unit**        | Single class/function        | White-box | Fast    | 100% domain coverage                   |
 | **Functional**  | Interface contract           | Black-box | Fast    | All implementations pass same contract |
 | **Integration** | Adapter + real dependency    | White-box | Medium  | 100% adapter coverage                  |
 | **SIT**         | Full system, single endpoint | Black-box | Slow    | Endpoint-by-endpoint behavior          |
@@ -28,11 +28,7 @@ invocation:
 
 ### Frameworks
 
-| Language       | Unit + Functional        | Integration                 | SIT | E2E        |
-| -------------- | ------------------------ | --------------------------- | --- | ---------- |
-| TypeScript/Bun | `bun:test` + `should`    | `bun:test` + Testcontainers | k6  | Playwright |
-| C#/.NET        | xUnit + FluentAssertions | xUnit + Testcontainers      | k6  | Playwright |
-| Go             | `testing` + testify      | `testing` + testify + TC    | k6  | Playwright |
+See reference.md for framework details.
 
 ### Test Naming Conventions
 
@@ -54,7 +50,7 @@ invocation:
 
 | Language   | Unit + Functional                           | Integration                                                |
 | ---------- | ------------------------------------------- | ---------------------------------------------------------- |
-| TypeScript | Separate test directory                     | Separate test directory                                    |
+| TypeScript | `test/unit/`                                | `test/integration/`                                        |
 | C#         | `{Service}.UnitTest/` project               | `{Service}.IntTest/` project                               |
 | Go         | `lib/` folder (`_test.go` alongside domain) | `adapters/` folder (`_test.go` + `//go:build integration`) |
 

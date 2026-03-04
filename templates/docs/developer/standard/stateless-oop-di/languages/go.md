@@ -2,7 +2,7 @@
 
 ## Folder Structure
 
-```
+```text
 lib/                      # Domain layer
   identity/               # Bounded context
     user/
@@ -11,15 +11,16 @@ lib/                      # Domain layer
       service.go          # UserService
 
 adapters/                 # Adapter layer
-  repos/
-    postgres/
-      user_repo.go
+  identity/               # Bounded context
+    user/
+      data/
+        user_repo.go
 ```
 
 ## Structures
 
 ```go
-// lib/user/structures.go
+// lib/identity/user/structures.go
 type UserRecord struct {
     Name  string
     Email string
@@ -34,17 +35,22 @@ type UserPrincipal struct {
 ## Interfaces
 
 ```go
-// lib/user/interfaces.go
+// lib/identity/user/interfaces.go
 type UserRepository interface {
     FindById(ctx context.Context, id string) (*UserPrincipal, error)
     Save(ctx context.Context, record UserRecord) (*UserPrincipal, error)
+}
+
+// Logger interface used by UserService
+type Logger interface {
+    Info(msg string, args ...any)
 }
 ```
 
 ## Stateless Service
 
 ```go
-// lib/user/service.go
+// lib/identity/user/service.go
 type UserService struct {
     repo   UserRepository
     logger Logger
@@ -63,8 +69,8 @@ func (s *UserService) Create(ctx context.Context, record UserRecord) (*UserPrinc
 ## Entry Point Wiring
 
 ```go
-// main.go
+// main.go (pseudo-code for wiring structure)
 repo := postgres.NewUserRepo(pool)
-logger := slog.Default()
+logger := slog.Default() // *slog.Logger satisfies Logger interface
 userService := user.NewUserService(repo, logger)
 ```

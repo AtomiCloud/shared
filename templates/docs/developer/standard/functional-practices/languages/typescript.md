@@ -21,12 +21,14 @@ function updateName(user: User, name: string): User {
 
 ## Pure Functions
 
-Instance methods are pure when all members are readonly. No standalone functions for business logic.
+Prefer instance methods when grouping related transforms. Standalone functions are acceptable for stateless pure helpers that transform data without side effects.
+
+> **Note:** The `updateName` function above is a standalone function for immutable transforms and is acceptable because it is stateless and has no side effects.
 
 ```typescript
 // Pure instance method — all members readonly
 class NameFormatter {
-  constructor(private readonly suffix: string) {} // readonly → method is pure
+  constructor(private readonly suffix: string) {} // all-readonly members + no side effects → method is pure
 
   format(first: string, last: string): string {
     return `${first} ${last} ${this.suffix}`;
@@ -58,11 +60,11 @@ class UserNotFound extends Error {
 }
 ```
 
-> Result type and ROP combinator patterns for TypeScript are TBA. Once the library is pinned, this section will document `.map()`, `.mapErr()`, `.andThen()`, and `.match()` patterns.
+> Result type and ROP combinator patterns for TypeScript are TBD. Once the library is pinned, this section will document `.map()`, `.mapErr()`, `.andThen()`, and `.match()` patterns.
 
 ## Folder Structure
 
-```
+```text
 src/
   lib/                    # Domain layer — pure code
     {bounded-context}/

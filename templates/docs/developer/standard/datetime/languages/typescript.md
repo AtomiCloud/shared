@@ -35,6 +35,9 @@ instantFromString.toString(); // '2024-03-15T14:30:00Z'
 const later = instantFromString.add({ hours: 2 });
 
 // Compare
+const otherInstant = Temporal.Instant.from('2024-03-15T15:00:00Z');
+const instant1 = Temporal.Instant.from('2024-03-15T14:30:00Z');
+const instant2 = Temporal.Instant.from('2024-03-15T15:00:00Z');
 instantFromString.equals(otherInstant);
 Temporal.Instant.compare(instant1, instant2); // -1, 0, or 1
 ```
@@ -138,7 +141,7 @@ const negated = durationFromObj.negated();
 
 // Add to instant
 const instant = Temporal.Now.instant();
-const later = instant.add(duration);
+const later = instant.add(durationFromObj);
 
 // Difference between instants
 const start = Temporal.Instant.from('2024-03-15T10:00:00Z');
@@ -152,7 +155,7 @@ const elapsed = start.until(end); // Duration
 
 ```typescript
 // WRONG - Native Date has broken behavior
-const date = new Date(2024, 2, 15); // Month is 0-indexed!
+const legacyDate = new Date(2024, 2, 15); // Month is 0-indexed!
 
 // RIGHT - Temporal is explicit and correct
 const date = new Temporal.PlainDate(2024, 3, 15);
@@ -177,9 +180,9 @@ console.log(displayTime.toString());
 // Birthday doesn't have a time component
 const birthday = Temporal.PlainDate.from('1990-03-15');
 
-// Calculate age
+// Calculate age (must specify largestUnit to get years)
 const today = Temporal.Now.plainDateISO();
-const age = birthday.until(today).years;
+const age = birthday.until(today, { largestUnit: 'year' }).years;
 ```
 
 ### Duration for Timeouts
@@ -201,20 +204,25 @@ const json = JSON.stringify({ timestamp: instant.toString() });
 
 // String -> Instant
 const parsed = JSON.parse(json);
-const instant = Temporal.Instant.from(parsed.timestamp);
+const restoredInstant = Temporal.Instant.from(parsed.timestamp);
 ```
 
 ## Formatting
 
 ```typescript
-const instant = Temporal.Now.instant();
+import { Temporal, Intl } from '@js-temporal/polyfill';
+
+const instant = Temporal.Instant.from('2024-03-15T14:30:00Z');
 const tz = 'America/New_York';
 
-// Using Intl.DateTimeFormat
+// Using polyfilled Intl.DateTimeFormat (supports Temporal types)
 const formatter = new Intl.DateTimeFormat('en-US', {
   timeZone: tz,
   dateStyle: 'full',
   timeStyle: 'long',
 });
 formatter.format(instant); // 'Friday, March 15, 2024 at 10:30:00 AM EDT'
+
+// Alternative: use toLocaleString() directly (simpler)
+instant.toLocaleString('en-US', { timeZone: tz, dateStyle: 'full', timeStyle: 'long' }); // 'Friday, March 15, 2024 at 10:30:00 AM EDT'
 ```

@@ -24,7 +24,7 @@ Rate of change is easier to observe -- you can measure it from git history. But 
 
 ### The Absolute Rule: No Private Methods
 
-AtomiCloud code has **zero private methods**. Every private method is a hidden dependency. Every hidden dependency is a testing obstacle. Every helper should be extracted as an injectable service.
+AtomiCloud code has **zero private methods**. Every private method is a hidden dependency. Hidden dependencies impede testability. Extract helpers as injectable services instead.
 
 ---
 
@@ -36,18 +36,18 @@ OCP means you can change what the system does without changing the code that alr
 
 ### The Spectrum of Openness
 
-```
+```typescript
 // Fully closed -- hardcoded behavior
-function addClosed()
-  return 3 + 5
+function addClosed();
+return 3 + 5;
 
 // Opened one level -- parameterized input
-function addOpened(a, b)
-  return a + b
+function addOpened(a, b);
+return a + b;
 
 // Opened further -- parameterized behavior
-function addEvenMoreOpened(a, b, combine)
-  return combine(a, b)
+function addEvenMoreOpened(a, b, combine);
+return combine(a, b);
 ```
 
 ### Why OOP, Not Higher-Order Functions
@@ -65,7 +65,7 @@ Class members are **only** one of two things:
 
 No mutable state. No fields that change after construction.
 
-```
+```typescript
 class Enricher
   constructor(
     client: IClient,          // injected service
@@ -101,7 +101,7 @@ ISP governs **interface design** from the consumer's perspective. Design interfa
 
 Different from SRP: SRP would not separate `push` from `pop` on a stack (same reason to change). But ISP would if a client only pushes:
 
-```
+```typescript
 interface Pusher
   push(item) -> void
 
@@ -121,7 +121,7 @@ class Stack implements Pusher, Popper
 
 DIP is the **core binding principle**. Without DIP, all the other principles are theoretical.
 
-```
+```text
 A -> B           // A breaks when B changes
 
 A -> X <- B      // X is an interface; A and B are decoupled
@@ -140,7 +140,7 @@ A dependency is **visible** when you can see everything the code needs by lookin
 
 A dependency is **fixed** when it is immutable after construction. The reference never changes. The behavior never changes.
 
-```
+```typescript
 // WRONG -- not visible, not fixed
 class OrderService
   processOrder(order)
@@ -148,7 +148,7 @@ class OrderService
     return Database.query(...)        // hidden dependency on Database
 ```
 
-```
+```typescript
 // RIGHT -- visible and fixed
 class OrderService
   constructor(logger: ILogger, db: IDatabase)
@@ -174,7 +174,7 @@ If everything is a class, everything is injectable. If everything is injectable,
 
 A static method cuts through the DI tree. You cannot swap it for a silent logger in tests, a structured logger in production, or a per-module logger.
 
-```
+```text
 // WRONG -- static global
 static Logger.log("User logged in")    // decree from the universe
 
@@ -192,7 +192,7 @@ class UserService
 
 Temporal coupling occurs when the order of operations matters, but the code does not enforce it. This is a subtle form of hidden dependency.
 
-```
+```typescript
 // WRONG -- temporal coupling: must call setTable before build
 class QueryBuilder
   private table: string?
@@ -208,7 +208,7 @@ class QueryBuilder
     // crashes if table or columns not set!
 ```
 
-```
+```typescript
 // RIGHT -- no temporal coupling: constructor enforces required state
 class QueryBuilder
   constructor(table: string, columns: string[])
@@ -217,7 +217,7 @@ class QueryBuilder
     // always works
 ```
 
-```
+```typescript
 // WRONG -- stateful service with temporal coupling
 class OrderService
   private items: Item[] = []
@@ -229,7 +229,7 @@ class OrderService
     return sum(this.items)
 ```
 
-```
+```typescript
 // RIGHT -- all data flows through parameters
 class OrderService
   calculateTotal(items: Item[]) -> Money
@@ -262,6 +262,8 @@ See language-specific guides for implementation details:
 - [TypeScript/Bun](./languages/typescript.md)
 - [C#/.NET](./languages/csharp.md)
 - [Go](./languages/go.md)
+
+---
 
 ## Related Articles
 

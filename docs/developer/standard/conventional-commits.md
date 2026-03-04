@@ -3,8 +3,6 @@ id: conventional-commits
 title: Conventional Commits
 ---
 
-# Conventional Commits
-
 This document describes the commit conventions used in the workspace template.
 
 ## Overview
@@ -13,13 +11,13 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ## Format
 
-```
+```text
 type(scope): description
 ```
 
 ### Examples
 
-```
+```text
 feat(api): add new user endpoint
 fix(auth): resolve token expiration issue
 docs(readme): update installation instructions
@@ -97,7 +95,7 @@ The specific behavior is defined in your project's `atomi_release.yaml` and refl
 
 To indicate a breaking change, add `!` after the type/scope or add `BREAKING CHANGE:` footer:
 
-```
+```text
 feat(api)!: remove deprecated endpoint
 
 or

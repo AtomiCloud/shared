@@ -8,7 +8,7 @@ This article builds on [Software Design Philosophy](../software-design-philosoph
 
 ## The Test Pyramid
 
-```
+```text
                     ┌─────────────────────┐
                     │        E2E          │    Frontend only
                     │    (Black-box)      │    Playwright, Cypress
@@ -20,8 +20,8 @@ This article builds on [Software Design Philosophy](../software-design-philosoph
                     └──────────┬──────────┘
                                │
                     ┌──────────┴──────────┐
-                    │    Integration      │    Module by module
-                    │    (Black-box)      │    Testcontainers, mocks
+                    │    Integration      │    Adapters with real deps
+                    │    (White-box)      │    Testcontainers, real DBs
                     └──────────┬──────────┘
                                │
            ┌───────────────────┴───────────────────┐
@@ -41,7 +41,7 @@ The pyramid shape is deliberate: tests at the bottom are fast, cheap, and numero
 
 Unit tests are **white-box tests** that examine the internal implementation of a single class or function. They know about private implementation details (in our case, extracted as injectable services). They aim for **100% code coverage**.
 
-### Characteristics
+### Unit Test Characteristics
 
 - **Scope:** Single class or function
 - **Visibility:** White-box (knows about dependencies and internal structure)
@@ -152,7 +152,7 @@ it('should timeout after deadline', () => {
 
 Functional tests are **black-box tests** that verify behavior through interfaces. They do not know about internal implementation -- only inputs, outputs, and the interface contract.
 
-### Characteristics
+### Functional Test Characteristics
 
 - **Scope:** Interface contract
 - **Visibility:** Black-box (tests against interface, not implementation)
@@ -213,16 +213,26 @@ In practice, unit tests and functional tests often live in the same test folder.
 
 ---
 
-## Integration Tests
+## Integration Tests (White-Box)
 
-Integration tests verify that modules work together correctly. They test the **wiring** between components, not individual units.
+Integration tests verify that adapters work correctly with real external dependencies. They are **white-box tests** because they test adapter implementation with knowledge of internal structure.
 
-### Characteristics
+### Integration Test Characteristics
 
-- **Scope:** Multiple modules working together
-- **Visibility:** Black-box from module perspective
-- **Speed:** Slower (may use real databases, queues)
-- **Coverage goal:** Critical integration paths
+- **Scope:** Single adapter with real external dependency
+- **Visibility:** White-box (knows it's testing an adapter, sets up real DB/API)
+- **Speed:** Slower (uses real databases, APIs)
+- **Coverage goal:** Critical adapter paths
+
+### Why White-Box
+
+Integration tests in our definition test **adapters** — code that bridges our domain to external systems. When testing a `PostgresUserRepo`, you:
+
+- Know it's a Postgres adapter (not a black box)
+- Set up a real Postgres container
+- Verify the SQL queries and mapping logic
+
+This is fundamentally different from SIT/E2E which treat the system as a black box.
 
 ### Example: Repository + Database
 
@@ -258,7 +268,7 @@ Integration tests test **module by module**, not the whole system at once. A rep
 
 SIT tests the **entire system from a client's perspective**. This is fully black-box testing: the test has no access to the code, no coverage metrics, only the external API.
 
-### Characteristics
+### SIT Characteristics
 
 - **Scope:** Full system
 - **Visibility:** Black-box (client's eye view)
@@ -326,7 +336,7 @@ SIT is black-box. We cannot measure code coverage. Instead, we measure:
 
 E2E tests verify the **entire user experience**, including the frontend. These are the most expensive tests to write and maintain.
 
-### Characteristics
+### E2E Characteristics
 
 - **Scope:** Full stack including UI
 - **Visibility:** Black-box (user's eye view)
@@ -372,7 +382,7 @@ E2E tests are brittle and expensive. Keep them to a minimum:
 
 Group tests logically:
 
-```
+```text
 src/
   services/
     OrderService.ts
@@ -410,9 +420,10 @@ tests/
 
 **Integration Tests:**
 
-- [ ] Tests module combinations
-- [ ] Uses real databases/queues where appropriate
-- [ ] Still mocks external services
+- [ ] Tests adapters with real external dependencies
+- [ ] White-box: knows implementation details
+- [ ] Uses real databases/APIs (Testcontainers)
+- [ ] Still mocks external services outside the adapter under test
 
 **SIT:**
 

@@ -1,6 +1,6 @@
 # Software Design Philosophy
 
-**Part 1 of 8: The AtomiCloud Engineering Series**
+Part 1 of 8: The AtomiCloud Engineering Series
 
 _This is the first article in an eight-part series covering the principles, patterns, and practices behind every AtomiCloud codebase. Start here if you are new -- everything else builds on these ideas._
 
@@ -39,7 +39,7 @@ So how do you make code easy to change? You make it easy to understand.
 
 Think of it like a physicist studying a magnetic field. When calculating the force at a specific point, they don't need to know the state of every particle in the universe. They only need to know the field in the area of interest. The field is an abstraction that captures all the relevant information locally.
 
-```
+```text
 Without locality:      To understand A, you must understand B, C, D, E...
                        To understand B, you must understand F, G, H...
                        (infinite regress)

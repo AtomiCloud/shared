@@ -49,7 +49,7 @@ All detailed information is in the Nix documentation:
 
 ### Step 3: File Structure Overview
 
-```
+```text
 nix/
 ├── packages.nix   # Aggregate packages from registries
 ├── env.nix        # Group packages: system, dev, main, lint, releaser
@@ -75,13 +75,13 @@ stable = with pkgs-stable; {
 };
 ```
 
-2. Add to environment group in `nix/env.nix`:
+1. Add to environment group in `nix/env.nix`:
 
 ```nix
 dev = [ jq ];  // Only in default shell
 ```
 
-3. Apply: `nix flake update`
+1. Apply: `nix flake update`
 
 **To add a binary to PATH** (canonical method):
 Edit `.envrc`:

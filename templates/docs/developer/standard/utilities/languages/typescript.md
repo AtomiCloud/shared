@@ -5,8 +5,13 @@
 Lodash provides utility functions for common programming tasks. Use tree-shakeable imports.
 
 ```bash
-bun add lodash-es lodash
-bun add -D @types/lodash
+# Recommended: lodash-es (ESM, tree-shakeable)
+bun add lodash-es
+bun add -D @types/lodash-es
+
+# Alternative: per-method imports from lodash (also tree-shakeable)
+# bun add lodash
+# bun add -D @types/lodash
 ```
 
 ```typescript
@@ -38,7 +43,7 @@ const total = items.reduce((sum, item) => sum + item.price, 0);
 Group elements by a key:
 
 ```typescript
-import { groupBy } from 'lodash';
+import { groupBy } from 'lodash-es';
 
 const users = [
   { name: 'Alice', role: 'admin' },
@@ -59,7 +64,7 @@ const groupedByFn = groupBy(users, u => u.role);
 Sort by one or more properties:
 
 ```typescript
-import { sortBy } from 'lodash';
+import { sortBy } from 'lodash-es';
 
 const sorted = sortBy(users, ['role', 'name']);
 // Sorts by role, then by name
@@ -73,7 +78,7 @@ const sortedByFn = sortBy(users, [u => u.role, u => u.name.toLowerCase()]);
 Sort with direction control:
 
 ```typescript
-import { orderBy } from 'lodash';
+import { orderBy } from 'lodash-es';
 
 const sorted = orderBy(users, ['age', 'name'], ['desc', 'asc']);
 ```
@@ -83,7 +88,7 @@ const sorted = orderBy(users, ['age', 'name'], ['desc', 'asc']);
 Find elements:
 
 ```typescript
-import { find, findLast } from 'lodash';
+import { find, findLast } from 'lodash-es';
 
 const user = find(users, { role: 'admin' });
 const userByAge = find(users, u => u.age > 30);
@@ -95,7 +100,7 @@ const last = findLast(users, { active: true });
 Remove duplicates:
 
 ```typescript
-import { uniq, uniqBy } from 'lodash';
+import { uniq, uniqBy } from 'lodash-es';
 
 const unique = uniq([1, 2, 1, 3, 2]); // [1, 2, 3]
 
@@ -108,7 +113,7 @@ const uniqueUsersByFn = uniqBy(users, u => u.email);
 Flatten nested arrays:
 
 ```typescript
-import { flatten, flattenDeep } from 'lodash';
+import { flatten, flattenDeep } from 'lodash-es';
 
 const flat = flatten([
   [1, 2],
@@ -122,7 +127,7 @@ const deep = flattenDeep([1, [2, [3, [4]]]]); // [1, 2, 3, 4]
 Split into chunks:
 
 ```typescript
-import { chunk } from 'lodash';
+import { chunk } from 'lodash-es';
 
 const chunks = chunk([1, 2, 3, 4, 5, 6], 2);
 // [[1, 2], [3, 4], [5, 6]]
@@ -133,7 +138,7 @@ const chunks = chunk([1, 2, 3, 4, 5, 6], 2);
 Combine arrays:
 
 ```typescript
-import { zip, unzip } from 'lodash';
+import { zip, unzip } from 'lodash-es';
 
 const zipped = zip(['a', 'b'], [1, 2], [true, false]);
 // [['a', 1, true], ['b', 2, false]]
@@ -142,12 +147,12 @@ const unzipped = unzip(zipped);
 // [['a', 'b'], [1, 2], [true, false]]
 ```
 
-### difference, intersection
+### difference, intersection, union
 
 Set operations:
 
 ```typescript
-import { difference, intersection, union } from 'lodash';
+import { difference, intersection, union } from 'lodash-es';
 
 const diff = difference([1, 2, 3, 4], [2, 4]); // [1, 3]
 const inter = intersection([1, 2, 3], [2, 3, 4]); // [2, 3]
@@ -161,7 +166,7 @@ const uni = union([1, 2], [2, 3]); // [1, 2, 3]
 Select or exclude properties:
 
 ```typescript
-import { pick, omit } from 'lodash';
+import { pick, omit } from 'lodash-es';
 
 const user = { id: 1, name: 'Alice', email: 'a@b.com', password: 'secret' };
 
@@ -177,12 +182,14 @@ const safe2 = omit(user, ['password']);
 Deep merge objects:
 
 ```typescript
-import { merge, defaults } from 'lodash';
+import { merge, defaults } from 'lodash-es';
 
-const merged = merge({ a: 1, b: { c: 2 } }, { b: { d: 3 }, e: 4 });
+// merge() mutates the first argument — pass {} to avoid side effects
+const merged = merge({}, { a: 1, b: { c: 2 } }, { b: { d: 3 }, e: 4 });
 // { a: 1, b: { c: 2, d: 3 }, e: 4 }
 
-const withDefaults = defaults({ a: 1 }, { a: 0, b: 2 });
+// defaults() mutates the first argument — pass {} to avoid side effects
+const withDefaults = defaults({}, { a: 1 }, { a: 0, b: 2 });
 // { a: 1, b: 2 }
 ```
 
@@ -191,7 +198,7 @@ const withDefaults = defaults({ a: 1 }, { a: 0, b: 2 });
 Deep clone:
 
 ```typescript
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 const original = { a: { b: [1, 2, 3] } };
 const copy = cloneDeep(original);
@@ -216,7 +223,7 @@ const reconstructed = Object.fromEntries(entries); // { a: 1, b: 2, c: 3 }
 Safely access nested properties:
 
 ```typescript
-import { get, set, has } from 'lodash';
+import { get, set, has } from 'lodash-es';
 
 const value = get(user, 'address.city.name', 'Unknown');
 set(user, 'preferences.theme', 'dark');
@@ -228,7 +235,7 @@ const exists = has(user, 'address.city');
 ### Case Conversion
 
 ```typescript
-import { camelCase, snakeCase, kebabCase, startCase, capitalize } from 'lodash';
+import { camelCase, snakeCase, kebabCase, startCase, capitalize } from 'lodash-es';
 
 camelCase('hello world'); // 'helloWorld'
 snakeCase('helloWorld'); // 'hello_world'
@@ -240,25 +247,30 @@ capitalize('hello world'); // 'Hello world'
 ### truncate
 
 ```typescript
-import { truncate } from 'lodash';
+import { truncate } from 'lodash-es';
 
 truncate('hello world this is long', { length: 15 });
-// 'hello world...'
+// 'hello world ...' (note: lodash doesn't trim trailing whitespace before ellipsis)
 ```
 
 ### template
 
 ```typescript
-import { template } from 'lodash';
+import { template } from 'lodash-es';
 
+// <%= %> — interpolate (raw, does NOT HTML-escape; use only for trusted data or non-HTML contexts)
 const compiled = template('Hello <%= name %>!');
 compiled({ name: 'Alice' }); // 'Hello Alice!'
+
+// <%- %> — escape (HTML-escapes values; safe for user-supplied data in HTML output)
+const safeCompiled = template('Hello <%- name %>!');
+safeCompiled({ name: '<script>alert(1)</script>' }); // 'Hello &lt;script&gt;alert(1)&lt;/script&gt;'
 ```
 
 ### pad, repeat
 
 ```typescript
-import { pad, repeat } from 'lodash';
+import { pad, repeat } from 'lodash-es';
 
 pad('abc', 8); // '  abc   '
 pad('abc', 8, '_-'); // '_-abc_-_'
@@ -272,7 +284,7 @@ repeat('ab', 3); // 'ababab'
 Delay execution until pause:
 
 ```typescript
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 
 const debouncedSearch = debounce((query: string) => {
   fetchResults(query);
@@ -292,7 +304,7 @@ debouncedSearch.cancel();
 Limit rate of calls:
 
 ```typescript
-import { throttle } from 'lodash';
+import { throttle } from 'lodash-es';
 
 const throttledScroll = throttle(() => {
   saveScrollPosition();
@@ -306,7 +318,7 @@ window.addEventListener('scroll', throttledScroll);
 Cache function results:
 
 ```typescript
-import { memoize } from 'lodash';
+import { memoize } from 'lodash-es';
 
 const expensiveCalculation = memoize((n: number) => {
   console.log('Calculating...');
@@ -322,7 +334,7 @@ expensiveCalculation(5); // Returns 25 (cached)
 Execute only once:
 
 ```typescript
-import { once } from 'lodash';
+import { once } from 'lodash-es';
 
 const initialize = once(() => {
   console.log('Initializing...');
@@ -336,7 +348,7 @@ initialize(); // Does nothing
 ## Math
 
 ```typescript
-import { sum, mean, min, max, clamp, range } from 'lodash';
+import { sum, mean, min, max, clamp, range } from 'lodash-es';
 
 sum([1, 2, 3, 4]); // 10
 mean([1, 2, 3, 4]); // 2.5
@@ -356,14 +368,16 @@ range(0, 10, 2); // [0, 2, 4, 6, 8]
 import _ from 'lodash';
 _.groupBy(items, 'category');
 
-// RIGHT - Import only what you need
-import { groupBy } from 'lodash';
+// RIGHT - Import only what you need (from lodash-es for tree-shaking)
+import { groupBy } from 'lodash-es';
 groupBy(items, 'category');
 ```
 
 ### Prefer Native When Sufficient
 
 ```typescript
+import { groupBy, sortBy, uniqBy } from 'lodash-es';
+
 // Use native for simple operations
 const filtered = items.filter(x => x.active);
 const mapped = items.map(x => x.name);
@@ -380,14 +394,17 @@ const unique = uniqBy(items, 'id');
 For multiple operations, use `flow` or pipe:
 
 ```typescript
-import { flow, filter, map, sortBy, take } from 'lodash/fp';
+// Note: lodash/fp is CommonJS-only. For ESM/Bun projects, consider:
+// - Using native array methods: filter, map, sort, slice
+// - Using an ESM-first functional library like remeda or ramda
+// This example uses native methods for functional composition:
 
-const process = flow(
-  filter(u => u.active),
-  map(u => u.name),
-  sortBy(name => name.toLowerCase()),
-  take(10),
-);
+const getTopActiveUserNames = (users: User[]) =>
+  users
+    .filter(u => u.active)
+    .map(u => u.name)
+    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+    .slice(0, 10);
 
-const topNames = process(users);
+const topNames = getTopActiveUserNames(users);
 ```

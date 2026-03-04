@@ -2,7 +2,7 @@
 
 ## Folder Structure
 
-```
+```text
 {Service}.Domain/         # Pure class library — entities, interfaces, value objects
   Blog/
     Post/
@@ -110,7 +110,7 @@ public record UserPrincipal
 }
 ```
 
-## Aggregate Root (Assembled View)
+## Model (Assembled View)
 
 ```csharp
 // {Service}.Domain/Blog/Post/Post.cs

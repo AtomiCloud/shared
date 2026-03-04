@@ -2,7 +2,7 @@
 
 ## Folder Structure
 
-```
+```text
 lib/                      # Domain layer
   blog/                   # Bounded context
     post/
@@ -37,7 +37,7 @@ type PostRecord struct {
 
 type AuthorRecord struct {
     Name        string
-    DateOfBirth time.Time
+    DateOfBirth carbon.Date
 }
 ```
 
@@ -96,7 +96,7 @@ type UserPrincipal struct {
 }
 ```
 
-## Aggregate Root (Assembled View)
+## Model (Assembled View)
 
 ```go
 type Post struct {

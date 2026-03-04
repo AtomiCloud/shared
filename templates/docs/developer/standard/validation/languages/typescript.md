@@ -28,7 +28,8 @@ z.unknown();
 
 // Coercion (parse string to number, etc.)
 z.coerce.number(); // "42" -> 42
-z.coerce.boolean(); // "true" -> true
+z.coerce.boolean(); // WARNING: uses Boolean() — "false" -> true (any non-empty string is truthy)
+// For env vars/query strings, use z.string().refine(...) instead
 z.coerce.date(); // "2024-03-15" -> Date
 
 // String validation
@@ -78,6 +79,7 @@ const WithoutAgeSchema = UserSchema.omit({ age: true });
 const AdminSchema = UserSchema.extend({ role: z.literal('admin') });
 
 // Merge
+const AnotherSchema = z.object({ role: z.string() }); // placeholder schema
 const MergedSchema = UserSchema.merge(AnotherSchema);
 
 // Strict (reject unknown keys)
@@ -332,8 +334,13 @@ async function createUser(req: Request): Promise<Response> {
 
 ### Domain Invariants
 
+> **Note:** The `Result`, `err`, and `ok` types below are placeholders.
+> The actual Result type library for this project is not yet decided.
+> See the error-handling skill for updates.
+
 ```typescript
 // Domain type with invariant
+// Using placeholder Result type (library TBD)
 class Email {
   private constructor(private readonly value: string) {}
 

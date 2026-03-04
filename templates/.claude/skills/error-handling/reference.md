@@ -23,9 +23,9 @@ Never throw for expected failures. Encode in return type.
 
 ## Error Mapping Between Layers
 
-```
-Data Layer Error  →  Domain Error  →  API Layer →  Problem Details
-Row               →  Principal      →  Res       →  JSON error response
+```text
+Data Layer Error  →  Domain Error      →  API Layer Error  →  HTTP Response
+DbException       →  OrderError.XYZ    →  ProblemDetails   →  JSON error response
 ```
 
 ## Language Patterns

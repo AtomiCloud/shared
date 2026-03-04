@@ -27,7 +27,7 @@ var emails = users.Select(u => u.Email).ToList();
 ### Aggregate (Reduce)
 
 ```csharp
-var total = items.Aggregate(0, (sum, item) => sum + item.Price);
+var total = items.Aggregate(0m, (sum, item) => sum + item.Price);  // decimal seed
 var concatenated = words.Aggregate((a, b) => a + " " + b);
 ```
 
@@ -154,7 +154,7 @@ var dict = new Dictionary<string, int> { { "a", 1 }, { "b", 2 } };
 var keys = dict.Keys;
 var values = dict.Values;
 
-// Merge dictionaries
+// Merge dictionaries (throws ArgumentException on duplicate keys)
 var merged = dict1.Concat(dict2).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 // TryGetValue
@@ -167,10 +167,10 @@ if (dict.TryGetValue("key", out var value))
 ### Object Initialization
 
 ```csharp
-// Record initialization
+// Object initializer (valid for any class)
 var user = new User { Name = "Alice", Email = "a@b.com" };
 
-// With expression (non-destructive mutation)
+// With expression (non-destructive mutation — requires record or struct, C# 9+/10+)
 var updated = user with { Name = "New Name" };
 ```
 
@@ -228,20 +228,24 @@ var countFiltered = items.Count(i => i.IsActive);
 
 ```csharp
 // Verbose loop
-var names = new List<string>();
-foreach (var user in users)
 {
-    if (user.IsActive)
+    var namesVerbose = new List<string>();
+    foreach (var user in users)
     {
-        names.Add(user.Name);
+        if (user.IsActive)
+        {
+            namesVerbose.Add(user.Name);
+        }
     }
 }
 
 // LINQ - more readable
-var names = users
-    .Where(u => u.IsActive)
-    .Select(u => u.Name)
-    .ToList();
+{
+    var namesLinq = users
+        .Where(u => u.IsActive)
+        .Select(u => u.Name)
+        .ToList();
+}
 ```
 
 ### Materialize When Needed
@@ -249,7 +253,7 @@ var names = users
 LINQ uses deferred execution. Materialize with `ToList()` or `ToArray()` when:
 
 - Results will be enumerated multiple times
-- Data should be captured at a point in time
+- Data should be captured at a point
 - Working with database queries
 
 ```csharp
@@ -290,6 +294,10 @@ var result = users
 ### Pagination
 
 ```csharp
+// Requires: using Microsoft.EntityFrameworkCore;
+// PagedResult<T> is a user-defined type, e.g.:
+// public record PagedResult<T>(T[] Items, int Total, int Page, int PageSize);
+
 public static class QueryableExtensions
 {
     public static async Task<PagedResult<T>> ToPagedAsync<T>(
@@ -301,7 +309,7 @@ public static class QueryableExtensions
         var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync();
+            .ToArrayAsync();
 
         return new PagedResult<T>(items, total, page, pageSize);
     }

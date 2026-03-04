@@ -25,20 +25,23 @@ func UpdateName(user User, name string) User {
 
 Methods on structs are pure when all fields are immutable. No standalone functions for business logic.
 
+> **Note:** The `UpdateName` function below is a standalone package-level function for immutable transforms, which is acceptable in Go for pure data transformations (unlike TS/C# where instance methods are preferred).
+
 ```go
 // Pure method — all fields immutable
 type NameFormatter struct {
-    suffix string  // unexported + immutable → method is pure
+    suffix string  // unexported, treated as immutable by convention → method is pure
 }
 
-func (f *NameFormatter) Format(first, last string) string {
+func (f NameFormatter) Format(first, last string) string {
     return first + " " + last + " " + f.suffix
 }
 
 // Impure — reads clock (external state)
+// Note: Impurity comes from side effects (I/O, clocks, randomness), not from value vs pointer receiver
 type TimestampFormatter struct{}
 
-func (f *TimestampFormatter) Format(name string) string {
+func (f TimestampFormatter) Format(name string) string {
     return fmt.Sprintf("%s at %s", name, time.Now().Format(time.RFC3339))
 }
 ```
@@ -101,7 +104,7 @@ func (e *OrderNotFoundError) Error() string {
 
 ## Folder Structure
 
-```
+```text
 lib/                    # Domain layer
   {bounded-context}/
     {domain}/

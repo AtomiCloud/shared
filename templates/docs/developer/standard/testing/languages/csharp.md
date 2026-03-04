@@ -64,8 +64,13 @@ items.Should().HaveCount(3);
 items.Should().Contain("item");
 items.Should().BeEmpty();
 
-// Exceptions
+// Exceptions — act can be Action or Func<Task>
+Action act = () => subject.DoSomething();
 act.Should().Throw<InvalidOperationException>().WithMessage("Expected message");
+
+// For async methods
+Func<Task> actAsync = async () => await subject.DoSomethingAsync();
+await actAsync.Should().ThrowAsync<InvalidOperationException>();
 ```
 
 ## Parameterized Tests — TheoryData + ClassData
@@ -118,8 +123,10 @@ public class MockUserRepository : IUserRepository
 
 ## Spy Patterns
 
+Spies are primarily used for testing **side effects** — verifying that something happened, not just checking return values.
+
 ```csharp
-// Collect calls
+// Collect calls — verify logging side effects
 public class SpyLogger : ILogger
 {
     public readonly List<string> Logged = new();
@@ -128,7 +135,7 @@ public class SpyLogger : ILogger
 }
 // Assert: spy.Logged.Should().Equal("msg1", "msg2");
 
-// Capture argument
+// Capture argument — verify what was sent
 public class SpySender : ISender
 {
     public object? Captured;
@@ -137,13 +144,14 @@ public class SpySender : ISender
 }
 // Assert: spy.Captured.Should().BeEquivalentTo(new { Id = "123" });
 
-// Count calls
+// Count calls — verify retry logic
 public class SpyClient : IClient
 {
     public int CallCount;
 
     public void Fetch() { CallCount++; throw new Exception("fail"); }
 }
+// Use when testing retry logic — e.g., assert retried exactly 3 times despite exceptions
 // Assert: spy.CallCount.Should().Be(3);
 ```
 
@@ -228,13 +236,13 @@ public class FileTaskRepositoryContract : TaskRepositoryContract, IAsyncLifetime
 // {Service}.IntTest/PostRepositoryTests.cs
 public class PostRepositoryTests : IAsyncLifetime
 {
-    private PostgresContainer _container = null!;
+    private PostgreSqlContainer _container = null!;
     private NpgsqlConnection _connection = null!;
     private PostRepository _subject = null!;
 
     public async Task InitializeAsync()
     {
-        _container = new PostgresBuilder()
+        _container = new PostgreSqlBuilder()
             .WithImage("postgres:16")
             .WithDatabase("testdb")
             .WithUsername("postgres")
@@ -246,14 +254,18 @@ public class PostRepositoryTests : IAsyncLifetime
         _connection = new NpgsqlConnection(_container.GetConnectionString());
         await _connection.OpenAsync();
 
-        await _connection.ExecuteAsync("CREATE TABLE posts (id TEXT PRIMARY KEY, title TEXT, description TEXT)");
+        // Create schema using raw ADO.NET
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "CREATE TABLE posts (id TEXT PRIMARY KEY, title TEXT, description TEXT)";
+        await cmd.ExecuteNonQueryAsync();
 
         _subject = new PostRepository(_connection, new PostRepoMapper());
     }
 
     public async Task DisposeAsync()
     {
-        await _connection.DisposeAsync();
+        if (_connection is not null)
+            await _connection.DisposeAsync();
         await _container.DisposeAsync();
     }
 

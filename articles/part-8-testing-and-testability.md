@@ -1,6 +1,6 @@
 # Testing and Testability
 
-**Part 8 of 8: The AtomiCloud Engineering Series**
+Part 8 of 8: The AtomiCloud Engineering Series
 
 _Parts 1 through 7 gave us philosophy, principles, patterns, domain modeling, architecture, and wiring. Now the question: how do you know it works? This part shows how the design we have built makes testing straightforward -- and why testability is the proof that the design works._
 
@@ -71,11 +71,11 @@ Unit tests examine the internal implementation of a single class or function. Th
 
 Every unit test follows the same structure: **Arrange, Act, Assert**.
 
-```
+```typescript
 describe('PostService', () => {
   it('should create post with valid title', () => {
     // Arrange - set up the subject, inputs, expected result
-    const mockRepo = { create: (r) => Ok(mockPost) };
+    const mockRepo = { create: r => Ok(mockPost) };
     const subject = new PostService(mockRepo);
     const input = { title: 'Hello', description: 'World', tags: [] };
     const expected = mockPost;
@@ -106,7 +106,7 @@ These names are a team convention. When every test uses them, you can scan any t
 
 A single test case can pass by accident. Maybe the implementation is hardcoded. Maybe it works for that specific input but breaks for everything else. Multiple cases prove correctness.
 
-```
+```typescript
 // Risky - single case, might pass by luck
 it('should format status', () => {
   expect(formatStatus('pending')).toBe('Pending');
@@ -132,7 +132,7 @@ Unit tests must be:
 - **Fast** -- no sleep, no real IO
 - **Isolated** -- no dependence on test execution order
 
-```
+```typescript
 // Wrong - uses real time (slow, flaky)
 it('should timeout after 1 second', async () => {
   const start = Date.now();
@@ -164,7 +164,7 @@ Here is the key difference from unit tests: a unit test knows _how_ the class wo
 
 Functional tests validate the **interface contract**. They ensure that any implementation of the interface will behave correctly. This is the essence of the Liskov Substitution Principle from [Part 3](./part-3-solid-principles.md) -- if you can swap implementations, you need tests that prove the swap is safe.
 
-```
+```typescript
 // The interface
 interface IPaymentProcessor:
   charge(amount: Money, card: CardDetails): Result<Charge, PaymentError>
@@ -223,13 +223,13 @@ Integration tests catch these boundary errors.
 
 ### Example: Repository + Database
 
-```
+```typescript
 describe('PostgresPostRepository', () => {
   let db: TestDatabase;
   let subject: PostgresPostRepository;
 
   beforeAll(async () => {
-    db = await TestDatabase.create();       // Testcontainers spins up a real Postgres
+    db = await TestDatabase.create(); // Testcontainers spins up a real Postgres
     subject = new PostgresPostRepository(db.connection);
   });
 
@@ -323,7 +323,7 @@ If you are building a backend API with no frontend, you do not need E2E tests. S
 
 ### Example with Playwright
 
-```
+```typescript
 test('user can create order', async ({ page }) => {
   await page.goto('/orders/new');
 

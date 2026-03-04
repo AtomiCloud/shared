@@ -2,20 +2,20 @@
 
 ## Layer Models
 
-| Layer  | Models             | Mapper      |
-| ------ | ------------------ | ----------- |
-| API    | Req / Res          | API Mapper  |
-| Domain | Record / Principal | —           |
-| Data   | Row                | Data Mapper |
+| Layer  | Models                     | Mapper      |
+| ------ | -------------------------- | ----------- |
+| API    | Req / Res                  | API Mapper  |
+| Domain | Record / Principal / Model | —           |
+| Data   | Row                        | Data Mapper |
 
 ## Mapper Directions
 
-| Mapper             | Direction       | Purpose                      |
-| ------------------ | --------------- | ---------------------------- |
-| API Mapper (in)    | Req → Record    | Validate and transform input |
-| API Mapper (out)   | Principal → Res | Transform for response       |
-| Data Mapper (save) | Principal → Row | Transform for persistence    |
-| Data Mapper (load) | Row → Principal | Transform from persistence   |
+| Mapper             | Direction                        | Purpose                      |
+| ------------------ | -------------------------------- | ---------------------------- |
+| API Mapper (in)    | Req → Record                     | Validate and transform input |
+| API Mapper (out)   | Principal → Res                  | Transform for response       |
+| Data Mapper (save) | Principal → Row                  | Transform for persistence    |
+| Data Mapper (load) | Row → Record / Principal / Model | Transform from persistence   |
 
 ## API Layer Types
 
@@ -28,17 +28,17 @@
 
 ## Error Flow
 
-```
+```text
 Data Layer Error  →  Domain Error  →  API Layer →  Problem Details
 ```
 
 ## Folder Structure
 
-```
+```text
 lib/                        # Domain layer
   <bounded-context>/
     <entity>/
-      structures.ts|cs|go   # Record, Principal
+      structures.ts|cs|go   # Record, Principal, Aggregate
       interfaces.ts|cs|go   # IXxxService, IXxxRepository
       service.ts|cs|go
       errors.ts|cs|go

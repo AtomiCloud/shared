@@ -1,7 +1,9 @@
-.DS_Store
 .env
-.idea
 .direnv
-.pre-commit-config.yaml
 scratch/
+.pre-commit-config.yaml
+.DS_Store
+.idea
+.vscode
+
 .kagent/

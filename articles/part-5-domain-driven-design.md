@@ -1,6 +1,6 @@
 # Domain-Driven Design
 
-**Part 5 of 8: The AtomiCloud Engineering Series**
+Part 5 of 8: The AtomiCloud Engineering Series
 
 _We have principles for managing dependencies and patterns for writing predictable code. Now we pick up the actual material: your business domain. This part shows how to model domain concepts as code -- structures that speak the language of the business and remain pure from infrastructure._
 
@@ -76,7 +76,7 @@ You can think of bounded contexts as **larger-scale versions of the classes we d
 
 Here is where people get it wrong. Imagine an e-commerce system. Someone -- with the best intentions -- creates a single `Order` class and shares it across the entire codebase:
 
-```
+```typescript
 class Order:
   id: UUID
   customer: Customer
@@ -106,7 +106,7 @@ Every change to any of these concerns forces a change to the `Order` class. You 
 
 Split into bounded contexts, each with its own view of what an "order" is:
 
-```
+```text
 Billing Context:
   Order = { id, items, total, tax, discount, paymentMethod, invoiceNumber }
 
@@ -186,7 +186,7 @@ This leads us to three types: **Records**, **Principals**, and **Aggregate Roots
 
 A Record is pure data with no identity. It contains every field that a create or update form would ask for.
 
-```
+```typescript
 PostRecord:
   title: string
   description: string
@@ -207,14 +207,12 @@ Records also allow us to partition an entity into multiple segments with differe
 
 A Principal is a Record with identity -- the combination of an ID and the record data.
 
-```
-PostPrincipal:
-  id: uuid
-  record: PostRecord
+```typescript
+PostPrincipal: id: uuid;
+record: PostRecord;
 
-AuthorPrincipal:
-  id: uuid
-  record: AuthorRecord
+AuthorPrincipal: id: uuid;
+record: AuthorRecord;
 ```
 
 Post #42 is still post #42 after you edit the title. The identity persists across state changes. Principals map directly to database tables -- the primary key is the `id`, the columns come from the Record.
@@ -225,7 +223,7 @@ Sometimes you need more than just an `id` for identity -- maybe a `version` for 
 
 An Aggregate Root is a view that assembles a Principal with its related Principals. This is where relationships live.
 
-```
+```typescript
 Post:
   principal: PostPrincipal
   author: AuthorPrincipal
@@ -249,31 +247,31 @@ With these three types defined, the standard CRUD operations fall out naturally.
 
 **Search returns Principals.** When you are listing posts -- showing 50, 100, maybe 500 results -- you do not need every related entity. You need the post's own data: title, description, maybe a tag count. That is a single-table query, fast and cheap. Returning full aggregate roots would mean joining against the author table for every single result. For a search page, that is unnecessary and expensive.
 
-```
+```typescript
 search(params: PostSearch) => PostPrincipal[]
 ```
 
 **Get returns an Aggregate Root.** When you are viewing a single post, you want the full picture: the post itself, its author, maybe its comments. This is a detail view, and a few joins for one entity are perfectly fine. This is where the aggregate root earns its keep.
 
-```
+```typescript
 get(id: uuid) => Post?
 ```
 
 **Create takes a Record.** The user does not know the ID at creation time -- the system assigns one. So the input is just the data: title, description, tags. You get back an Aggregate Root so the UI can immediately display the newly created post with all its context, without needing a second round-trip.
 
-```
+```typescript
 create(record: PostRecord) => Post
 ```
 
 **Update takes an ID and a Record separately.** Why separate? Because the ID identifies _which_ entity to update, and the Record is _what_ to update it with. The ID is immutable -- you cannot change which post you are editing mid-update. By keeping them separate, the contract makes this explicit. And since the entire Record is replaced, there is no ambiguity about partial updates.
 
-```
+```typescript
 update(id: uuid, record: PostRecord) => Post?
 ```
 
 **Delete takes an ID.** That is all you need. Nothing to return.
 
-```
+```typescript
 delete(id: uuid) => void
 ```
 
@@ -307,7 +305,7 @@ This split -- cheap queries for lists, rich queries for detail views -- is exact
 
 Putting it all together:
 
-```
+```typescript
 interface PostService:
   search(params: PostSearch): Result<PostPrincipal[], PostError>
   get(id: uuid): Result<Post?, PostError>

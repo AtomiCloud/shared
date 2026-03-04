@@ -2,7 +2,7 @@
 
 ## Folder Structure
 
-```
+```text
 {Service}.Domain/         # Pure class library — interfaces, services
 {Service}.App/            # Adapters, DI wiring
 {Service}.UnitTest/       # Unit + functional tests
@@ -20,7 +20,7 @@ public class UserValidator
 
 public class UserService(IUserRepository repo, UserValidator validator) : IUserService
 {
-    public async Task<User> Create(UserRecord record) { /* ... */ }
+    public async Task<UserPrincipal> Create(UserRecord record) { /* ... */ }
 }
 ```
 

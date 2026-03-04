@@ -38,7 +38,7 @@ invocation:
 
 ### TypeScript
 
-```
+```text
 src/
   lib/                  # Domain layer
     {bounded-context}/
@@ -51,9 +51,9 @@ src/
     controllers/
 ```
 
-### C#
+### C\#
 
-```
+```text
 {Service}.Domain/       # Pure class library — entities, interfaces, value objects
 {Service}.App/          # ASP.NET/Console — controllers, repos, mappers, DI wiring
 {Service}.UnitTest/     # Unit tests + functional tests
@@ -62,7 +62,7 @@ src/
 
 ### Go
 
-```
+```text
 lib/                    # Domain layer
   {bounded-context}/
     {domain}/

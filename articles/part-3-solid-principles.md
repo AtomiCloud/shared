@@ -1,6 +1,6 @@
 # SOLID Principles
 
-**Part 3 of 8: The AtomiCloud Engineering Series**
+Part 3 of 8: The AtomiCloud Engineering Series
 
 _[Part 2](./part-2-dependency-model.md) gave us the model for explicit and flexible dependencies. SOLID provides the rules for applying that model well. Each principle addresses a specific aspect: what belongs together, how to open code for extension, how to design interfaces, how to invert dependencies. These are not arbitrary rules -- they follow directly from the goal of locality._
 
@@ -50,7 +50,7 @@ Rate of change is easier to observe -- you can measure it from git history. But 
 
 Say you are building a CLI tool for managing customers. You have a `CustomerService` that handles CRUD operations and also renders customer data to the terminal:
 
-```
+```typescript
 class CustomerService:
   get(id) -> Customer
   delete(id) -> void
@@ -62,7 +62,7 @@ It works. Then you notice something: `get`, `delete`, and `create` change at the
 
 The day someone breaks `create` while tweaking the ASCII table format, the reason becomes visceral:
 
-```
+```typescript
 class CustomerService:
   get(id) -> Customer
   delete(id) -> void
@@ -78,7 +78,7 @@ Now a UI change does not touch `CustomerService`, and a domain change does not t
 
 SRP leads to a surprising consequence about private methods. Consider a password checker:
 
-```
+```typescript
 class PasswordChecker:
   check(password) -> bool:
     hasAlpha = false
@@ -91,7 +91,7 @@ class PasswordChecker:
 
 This is hard to read. The natural instinct is to extract private helpers:
 
-```
+```typescript
 class PasswordChecker:
   check(password) -> bool:
     return hasAlpha(password) && hasSpecial(password)
@@ -107,7 +107,7 @@ Looks cleaner. But think about it through [Part 2](./part-2-dependency-model.md)
 
 What if we follow SRP properly? `hasAlpha` and `hasSpecial` are really about string pattern matching -- a different concern from password policy. They should be extracted into their own class:
 
-```
+```typescript
 class StringChecker:
   matchesPattern(s: string, pattern: string) -> bool:
     return s.matches(pattern)
@@ -137,7 +137,7 @@ Here is the payoff. Say the original `StringChecker` uses regex for pattern matc
 
 OCP means you can change behavior without changing existing code. The simplest form is parameterization:
 
-```
+```typescript
 // Closed -- hardcoded behavior
 function addClosed():
   return 3 + 5
@@ -155,7 +155,7 @@ Each step opens the function to more extension without modification. But there a
 
 To see where this leads in practice, consider writing a git wrapper library:
 
-```
+```typescript
 git_add(git_binary: string, repo_path: string, target: string):
   ...
 
@@ -170,7 +170,7 @@ Every function needs `git_binary` and `repo_path`. Each caller must pass the sam
 
 What we really want is to group the shared configuration together. And this is where objects come from -- not from traditional OOP thinking about modeling the world, but from a practical need to manage shared dependencies:
 
-```
+```typescript
 class Git:
   private readonly binary: string
   private readonly repo: string
@@ -209,7 +209,7 @@ LSP constrains how you implement interfaces. Every implementation must honor the
 
 Consider the classic square-and-rectangle example:
 
-```
+```typescript
 class Rectangle:
   setWidth(w):
     width = w
@@ -231,13 +231,13 @@ class Square extends Rectangle:
 
 The real-life logic of "a square is a rectangle with equal sides" seems to make the design elegant. Now imagine this code in production:
 
-```
-const r = factory.newRectOrSquare()
+```typescript
+const r = factory.newRectOrSquare();
 
-r.setWidth(5)
-r.setHeight(8)
+r.setWidth(5);
+r.setHeight(8);
 
-r.area()   // should be 40, but if r is a Square, it returns 64!
+r.area(); // should be 40, but if r is a Square, it returns 64!
 ```
 
 The caller had no way to know that setting width would also change height. Square violates LSP because it breaks the implicit promise that `setWidth` and `setHeight` are independent operations.
@@ -260,7 +260,7 @@ ISP looks similar to SRP, but it is subtly different. SRP says "gather together 
 
 The difference matters. Imagine a `Stack` class with both `push` and `pop`. SRP would _not_ separate them -- they change for the same reason, the stack data structure. But ISP _would_, if a client only pushes and never pops:
 
-```
+```typescript
 interface Pusher:
   push(item) -> void
 
@@ -288,7 +288,7 @@ When function A calls function B directly, A depends on B. If C also uses B, the
 
 DIP solves it by adding an interface between them:
 
-```
+```text
 // Before: A depends directly on B
 A -> B
 
@@ -311,7 +311,7 @@ This simple inversion is what makes every other principle practical:
 
 [Part 2](./part-2-dependency-model.md) established that dependencies should be explicit and flexible. The SOLID principles show us how. But there is a third property that emerges naturally when you apply these principles: **immutability** -- references that do not change after construction.
 
-```
+```typescript
 // WRONG -- implicit dependencies
 class OrderService:
   processOrder(order):
@@ -342,7 +342,7 @@ This is what you get when you follow SOLID consistently. Methods take value type
 
 One more thing worth flagging: temporal coupling. This is when the order of operations matters, but the code does not enforce it. It is a subtle form of implicit dependency -- a dependency on _time_.
 
-```
+```typescript
 // WRONG -- must call setTable before build
 class QueryBuilder:
   private table: string?
@@ -367,7 +367,7 @@ class QueryBuilder:
 
 Same thing with mutable state across method calls:
 
-```
+```typescript
 // WRONG -- calculateTotal depends on how many times addItem was called
 class OrderService:
   private items: Item[] = []

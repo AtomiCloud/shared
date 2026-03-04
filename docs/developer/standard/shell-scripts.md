@@ -3,8 +3,6 @@ id: shell-scripts
 title: Shell Script Conventions
 ---
 
-# Shell Script Conventions
-
 This document describes the conventions for shell scripts in the workspace template.
 
 ## Required Header
@@ -13,16 +11,15 @@ All scripts must start with:
 
 ```bash
 #!/usr/bin/env bash
-set -eou pipefail
+set -euo pipefail
 ```
 
 **Explanation:**
 
 - `#!/usr/bin/env bash` - Use bash via env for portability
-- `set -e` - Exit on error
-- `set -o` - Error on undefined variables
-- `set -u` - Same as -o (undefined variables)
-- `set -pipefail` - Catch errors in pipes
+- `set -e` - Exit immediately if a command exits with non-zero status (errexit)
+- `set -u` - Treat unset variables as an error (nounset)
+- `set -o pipefail` - Pipeline fails if any command in it fails
 
 ## Style Principles
 
@@ -67,7 +64,7 @@ set -eou pipefail
 
 ```bash
 #!/usr/bin/env bash
-set -eou pipefail
+set -euo pipefail
 
 echo "⚙️ Setting up..."
 bun install
@@ -82,7 +79,7 @@ echo "✅ Done!"
 
 All shell scripts live in `scripts/` at the project root and are invoked via `pls <command>` defined in `Taskfile.yaml`.
 
-```
+```text
 scripts/
 ├── setup.sh          # Install dependencies
 ├── build.sh          # Build project
@@ -101,7 +98,7 @@ scripts/
 
 | Aspect       | Pattern                                     |
 | ------------ | ------------------------------------------- |
-| **Header**   | `#!/usr/bin/env bash` + `set -eou pipefail` |
+| **Header**   | `#!/usr/bin/env bash` + `set -euo pipefail` |
 | **Style**    | Linear, POSIX-compatible, no colors         |
 | **Progress** | Emoji-prefixed echo statements              |
 | **Location** | `scripts/` directory                        |

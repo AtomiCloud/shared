@@ -19,24 +19,24 @@ invocation:
 - **Record**: Pure data, no identity — fields for create/update forms
 - **Multiple Records**: Entities with different update rates can have multiple Records (e.g., `UserRecord`, `UserImmutableRecord`, `UserSyncRecord`)
 - **Principal**: Record(s) + ID — the stored entity
-- **AggregateRoot**: Assembled view — Principal + related Principals
-- **CRUD Mapping**: search→Principal[], get→Aggregate, create→Record→Aggregate, update→id+Record→Aggregate, delete→id→void
+- **Model**: Assembled view — Principal + related Principals
+- **CRUD Mapping**: search→Principal[], get→Model, create→Record→Model, update→id+Record→Model, delete→id→void
 - **Ubiquitous Language**: Every concept gets a precise, unambiguous name
 
 ## CRUD Mapping Table
 
-| Operation  | Input          | Output          | Why                                    |
-| ---------- | -------------- | --------------- | -------------------------------------- |
-| **Search** | Search params  | `Principal[]`   | Single table, no joins, fast for lists |
-| **Get**    | `id`           | `AggregateRoot` | Full view with related data            |
-| **Create** | `Record`       | `AggregateRoot` | No ID needed — system generates it     |
-| **Update** | `id`, `Record` | `AggregateRoot` | Identity is immutable, data is mutable |
-| **Delete** | `id`           | `void`          | Nothing to return                      |
+| Operation  | Input          | Output        | Why                                    |
+| ---------- | -------------- | ------------- | -------------------------------------- |
+| **Search** | Search params  | `Principal[]` | Single table, no joins, fast for lists |
+| **Get**    | `id`           | `Model`       | Full view with related data            |
+| **Create** | `Record`       | `Model`       | No ID needed — system generates it     |
+| **Update** | `id`, `Record` | `Model`       | Identity is immutable, data is mutable |
+| **Delete** | `id`           | `void`        | Nothing to return                      |
 
 ## Core Principles
 
 1. **Domain-First Design** — Design domain in pure code before choosing infrastructure
-2. **Record/Principal/Aggregate Split** — Three levels of structure for every entity
+2. **Record/Principal/Model Split** — Three levels of structure for every entity
 3. **Multiple Records by Rate of Change** — Entities with different update rates get multiple Records (e.g., `UserRecord`, `UserImmutableRecord`, `UserSyncRecord`)
 4. **CRUD Blessed Path** — Standard service and repository interfaces follow the mapping table
 5. **Ubiquitous Language** — Precise nouns, no overloaded terms, names embedded in code
@@ -52,7 +52,7 @@ invocation:
 
 ## Active Instruction: Ubiquitous Language
 
-After modeling entities for a bounded context, create or update the ubiquitous language document at `docs/developer/ul/<bounded-context>.md`. List all entities (Records, Principals, Aggregate Roots), their definitions, and group them by module. Include anti-terms (words NOT to use and what to use instead).
+After modeling entities for a bounded context, create or update the ubiquitous language document at `docs/developer/ul/<bounded-context>.md`. List all entities (Records, Principals, Models), their definitions, and group them by module. Include anti-terms (words NOT to use and what to use instead).
 
 ## See Also
 

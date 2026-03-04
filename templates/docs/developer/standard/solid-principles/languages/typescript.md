@@ -2,7 +2,7 @@
 
 ## Folder Structure
 
-```
+```text
 src/
   lib/                    # Domain layer
     {bounded-context}/

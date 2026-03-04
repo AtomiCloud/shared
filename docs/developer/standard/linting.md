@@ -3,8 +3,6 @@ id: linting
 title: Linting
 ---
 
-# Linting
-
 This document describes the linting conventions used in the workspace template.
 
 ## Overview

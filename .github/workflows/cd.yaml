@@ -1,4 +1,3 @@
-#
 name: CD
 
 on:
@@ -6,6 +5,7 @@ on:
     tags:
       - 'v*.*.*'
 jobs:
+  #
   #
   docker:
     name: Build Template Docker Image

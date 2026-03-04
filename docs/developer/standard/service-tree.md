@@ -3,8 +3,6 @@ id: service-tree
 title: Service Tree (LPSM)
 ---
 
-# Service Tree (LPSM)
-
 This document describes the Service Tree (LPSM) naming conventions used across AtomiCloud.
 
 ## Overview
@@ -38,7 +36,7 @@ Encodes: **Purpose, Region, Segment**
 | Final Evolution  | Production          |
 | Non-Evolution    | Local/Testing       |
 
-### Examples
+### Landscape Examples
 
 - `pichu` - Development (First Evolution)
 - `pikachu` - Staging (Second Evolution)
@@ -50,7 +48,7 @@ Encodes: **Purpose, Region, Segment**
 - Enables blue-green deployments and fallback clusters
 - Allows cluster switching without affecting other labels
 
-### Examples
+### Cluster Examples
 
 - `diamond`, `ruby`, `sapphire`, `emerald`
 
@@ -59,7 +57,7 @@ Encodes: **Purpose, Region, Segment**
 - Represents a single product as a namespace
 - Business perspective: same target segment, single app, or single domain
 
-### Examples
+### Platform Examples
 
 - `sulfoxide` - System services
 - `halogen` - Business services
@@ -70,7 +68,7 @@ Encodes: **Purpose, Region, Segment**
 - Normal services: loosely follow element mappings
 - Sulfoxide (System) services: strict element mapping
 
-### Examples
+### Service Examples
 
 - `hydrogen` (H) - Lightweight/base service
 - `carbon` (C) - Core service
@@ -81,7 +79,7 @@ Encodes: **Purpose, Region, Segment**
 - No theme restrictions
 - Sub-components of a service
 
-### Examples
+### Module Examples
 
 - `api`, `worker`, `database`, `cache`, `queue`
 

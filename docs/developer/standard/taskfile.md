@@ -3,8 +3,6 @@ id: taskfile
 title: Taskfile Conventions
 ---
 
-# Taskfile Conventions
-
 This document describes the conventions for Taskfile usage in the workspace template.
 
 ## Overview
@@ -115,7 +113,7 @@ tasks:
 
 ## Directory Structure
 
-```
+```text
 Taskfile.yaml              # Main tasks: setup, dev, build, clean, lint, test
 tasks/
 ├── test.tasks.yaml        # All test variants

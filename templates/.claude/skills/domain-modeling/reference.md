@@ -2,11 +2,11 @@
 
 ## Record / Principal / Aggregate
 
-| Type          | Identity | Contains            | Used For            |
-| ------------- | -------- | ------------------- | ------------------- |
-| Record        | No       | Mutable fields      | Create/update forms |
-| Principal     | Yes (ID) | Record              | Storage, retrieval  |
-| AggregateRoot | Yes      | Principal + related | Detail views        |
+| Type      | Identity | Contains                  | Used For            |
+| --------- | -------- | ------------------------- | ------------------- |
+| Record    | No       | Domain fields (immutable) | Create/update forms |
+| Principal | Yes (ID) | Record                    | Storage, retrieval  |
+| Model     | Yes      | Principal + related       | Detail views        |
 
 ## Multiple Records per Entity
 
@@ -22,17 +22,17 @@ Principal holds all records: `Principal { id, record, immutable?, sync? }`
 
 ## CRUD Mapping
 
-| Operation  | Input          | Output          | Why                            |
-| ---------- | -------------- | --------------- | ------------------------------ |
-| **Search** | Search params  | `Principal[]`   | Lists need volume, not detail  |
-| **Get**    | `id`           | `AggregateRoot` | Detail view needs full picture |
-| **Create** | `Record`       | `AggregateRoot` | No ID at creation time         |
-| **Update** | `id`, `Record` | `AggregateRoot` | Identity immutable, data not   |
-| **Delete** | `id`           | `void`          | Nothing to return              |
+| Operation  | Input          | Output        | Why                            |
+| ---------- | -------------- | ------------- | ------------------------------ |
+| **Search** | Search params  | `Principal[]` | Lists need volume, not detail  |
+| **Get**    | `id`           | `Model`       | Detail view needs full picture |
+| **Create** | `Record`       | `Model`       | No ID at creation time         |
+| **Update** | `id`, `Record` | `Model`       | Identity immutable, data not   |
+| **Delete** | `id`           | `void`        | Nothing to return              |
 
 ## Folder Structure
 
-```
+```text
 lib/                        # Domain layer
   <bounded-context>/
     <entity>/
@@ -59,7 +59,7 @@ adapters/                   # Adapter layer
 - [ ] Domain has zero IO imports
 - [ ] Every concept has a precise, unambiguous name
 - [ ] Services injected via constructor; Structures passed as arguments
-- [ ] Every entity has Record, Principal, AggregateRoot
+- [ ] Every entity has Record, Principal, Model
 - [ ] CRUD mapping followed
 - [ ] Multiple Records when update rates differ
 

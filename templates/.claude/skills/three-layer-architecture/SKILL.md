@@ -1,6 +1,6 @@
 ---
 name: three-layer-architecture
-description: Three-layer architecture with mappers (Controller → Domain → Repo). Use when designing application architecture, adding new endpoints, or implementing data persistence.
+description: Three-layer architecture with guardrails → logic → storage. Use when designing application architecture, adding new endpoints, or implementing data persistence.
 invocation:
   - architecture
   - layers
@@ -10,62 +10,58 @@ invocation:
 
 # Three-Layer Architecture
 
-## Quick Reference
+## The Three Layers
 
-```
-Controller → Domain → Repository
-     ↓            ↓           ↓
-   Req/Res    Record/Principal   Row
+```text
+API Layer (Guardrails) → Domain Layer (Logic) → Data Layer (Storage)
 ```
 
-- **API Layer**: Handle IO from user/client (TUI, CLI, Socket, HTTP)
-- **Domain Layer**: Pure business logic, source of truth, NO IO
-- **Data Layer**: Handle IO to external systems (DB, files, APIs)
+| Layer  | Responsibility                                              |
+| ------ | ----------------------------------------------------------- |
+| API    | Type enforcement, validation, auth, mapping, serialization  |
+| Domain | Business logic, state machines, calculations (zero IO)      |
+| Data   | Indexes, data structures, query optimization, error mapping |
 
-## Core Principles
+## Layer Constraints
 
-1. **Layer Separation** — Each layer has single responsibility, isolated from others
-2. **Layer-Specific Models** — Req/Res (API), Record/Principal (Domain), Row (Data)
-3. **Mappers Between Layers** — API Mapper (Req ↔ Record, Principal ↔ Res), Data Mapper (Principal ↔ Row)
-4. **Domain is Source of Truth** — Pure, testable, interface-based, no IO
+- **API layer**: Zero business logic, only guardrails
+- **Domain layer**: Zero IO, defines interfaces for dependencies
+- **Data layer**: Implements domain interfaces, translates errors
 
-## Language Support
+## Separate Models Per Layer
 
-| Language       | Domain Location                               | Adapters Location |
-| -------------- | --------------------------------------------- | ----------------- |
-| TypeScript/Bun | `src/lib/{bounded-context}/{domain}/`         | `src/adapters/`   |
-| C#/.NET        | `{Service}.Domain/{BoundedContext}/{Domain}/` | `{Service}.App/`  |
-| Go             | `lib/{bounded-context}/{domain}/`             | `adapters/`       |
+| Layer  | Model Type       | Optimized For          |
+| ------ | ---------------- | ---------------------- |
+| API    | Req/Res          | Transport (JSON, CLI)  |
+| Domain | Principal/Record | Business logic         |
+| Data   | Data/Entity      | Storage (ORM, indexes) |
 
-## Benefits of Mappers
+## Mappers
 
-| Benefit          | Without Mappers    | With Mappers             |
-| ---------------- | ------------------ | ------------------------ |
-| Swap API layer   | Break domain tests | Just change API mapper   |
-| Swap repo        | Break domain tests | Just change data mapper  |
-| Add new endpoint | Modify domain      | Add new Req/Res + mapper |
-| Change DB schema | Touch all layers   | Only data mapper         |
+- **API Mapper**: External ↔ Domain (Req.ToDomain, domain.ToRes)
+- **Data Mapper**: Domain ↔ Storage (data.ToDomain, domain.ToData)
 
-## Adapter Structure
+**Mapper Rules:**
 
-```
-adapters/
-  <bounded-context>/
-    <entity>/
-      api/
-        controller.ts
-        req.ts
-        res.ts
-        validator.ts
-        mapper.ts
-      data/
-        repo.ts
-        mapper.ts
+1. Composable — higher-level mappers reuse lower-level
+2. SRP grouping — update requests target records by update rate
+3. ToData mutates — preserves ID/PK for ORM compatibility
+
+## Error Flow
+
+```text
+Infrastructure error → Domain error → Transport error (e.g., ProblemDetails)
 ```
 
-## Error Handling
+Errors are values, not exceptions. Each layer has its own error type.
 
-For controller-level error mapping and Result types, see [`/error-handling`](../error-handling/).
+## Dependency Direction
+
+Dependencies point inward:
+
+- API depends on Domain
+- Data depends on Domain
+- Domain depends on nothing (defines interfaces)
 
 ## See Also
 
@@ -73,7 +69,7 @@ Full documentation: [three-layer-architecture/](../../../docs/developer/standard
 
 Related skills:
 
-- [`/stateless-oop-di`](../stateless-oop-di/) — For testable domain services
+- [`/stateless-oop-di`](../stateless-oop-di/) — For wiring the composition root
 - [`/testing`](../testing/) — For testing pure domain logic with mocks
-- [`/domain-modeling`](../domain-modeling/) — For what goes in the domain layer
-- [`/error-handling`](../error-handling/) — For Result types and controller-level error handling
+- [`/domain-modeling`](../domain-modeling/) — For modeling the domain layer
+- [`/error-handling`](../error-handling/) — For Result types and error mapping

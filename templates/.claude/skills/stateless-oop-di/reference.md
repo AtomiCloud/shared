@@ -26,7 +26,7 @@ A method is stateless when:
 
 ## Folder Structure
 
-```
+```text
 lib/                        # Domain layer
   <bounded-context>/
     <entity>/
@@ -54,7 +54,7 @@ adapters/                   # Adapter layer
 | ------------------------------------ | ------------------------------- |
 | Mutable instance state               | Pass state as method parameters |
 | Creating dependencies inside methods | Inject via constructor          |
-| Service accepting service as arg     | Inject via constructor          |
+| Service as method parameter          | Inject via constructor instead  |
 | Grouping by type instead of domain   | Reorganize by bounded context   |
 
 ## Quick Checklist

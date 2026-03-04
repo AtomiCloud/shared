@@ -1,6 +1,6 @@
 # Three-Layer Architecture
 
-**Part 6 of 8: The AtomiCloud Engineering Series**
+Part 6 of 8: The AtomiCloud Engineering Series
 
 _The domain is pure. Everything else is a plugin. This part shows how to wrap the domain in layers that connect it to the real world -- databases, APIs, message queues -- while keeping the core clean and testable._
 
@@ -23,7 +23,7 @@ Here is my challenge to you: **things that look exactly alike might not be repet
 
 Consider a `User` concept in a typical web application:
 
-```
+```json
 // API Request/Response
 { "email": "alice@example.com", "password": "secret123" }
 
@@ -54,7 +54,7 @@ The three-layer architecture is, at its core, a plugin architecture. The domain 
 
 Start with the domain. A `PostService` that creates posts, validates rules, returns results. Pure. Tested.
 
-```
+```typescript
 class PostService(repo: IPostRepository):
   create(record: PostRecord): Result<Post, PostError>
 ```
@@ -63,7 +63,7 @@ The service depends on `IPostRepository` -- an interface. The domain _defines_ t
 
 When you need persistence, you add a layer **outward**:
 
-```
+```typescript
 class PostgresPostRepository(db: Database): IPostRepository
   create(record: PostRecord): Result<Post, PostError>
     // translate domain types to database types, execute query, translate back
@@ -73,7 +73,7 @@ The domain did not change. You added a module that fulfills its promise.
 
 When you need an API, you add a layer **inward**:
 
-```
+```typescript
 class PostController(service: PostService, mapper: PostControllerMapper)
   handleCreate(httpReq: HttpRequest): HttpResponse
     // parse request, map to domain, call service, map response
@@ -180,7 +180,7 @@ If your controller has its own models and a mapper, you change one mapper functi
 
 Optimized for the transport protocol. Strings, numbers, simple structures. Validation annotations. Serialization hints.
 
-```
+```typescript
 record CreatePostReq:
   title: string
   description: string
@@ -199,7 +199,7 @@ record PostRes:
 
 Use the richest types the language offers. Validated newtypes. Discriminated unions. Proper enums.
 
-```
+```typescript
 record PostRecord:
   title: PostTitle         // Validated, non-empty, max 200 chars
   description: string
@@ -210,7 +210,7 @@ record PostRecord:
 
 Shaped for the persistence layer. Foreign keys instead of nested objects. JSON-serialized columns. Database-native timestamps.
 
-```
+```typescript
 record PostData:
   id: UUID
   author_id: UUID           // Foreign key, not a nested object
@@ -236,7 +236,7 @@ Mappers are pure functions that translate between layers. They are small, boring
 
 ### Controller Mapper
 
-```
+```typescript
 module PostControllerMapper:
   toRecord(req: CreatePostReq): PostRecord
   toRes(post: Post): PostRes
@@ -246,7 +246,7 @@ Converts incoming requests to domain inputs, and domain outputs to responses. Th
 
 ### Repository Mapper
 
-```
+```typescript
 module PostDataMapper:
   toData(principal: PostPrincipal): PostData
   toDomain(data: PostData, authorData: AuthorData): Post
@@ -264,7 +264,7 @@ Errors flow through the same boundaries as data, translated at each layer.
 
 The repository catches infrastructure errors and maps them to domain errors:
 
-```
+```typescript
 class PostgresPostRepository(db: Database): IPostRepository:
   create(record: PostRecord): Result<Post, PostError>:
     try:
@@ -281,7 +281,7 @@ Infrastructure exceptions stop at the boundary. The domain only sees domain erro
 
 The controller maps domain errors to transport errors. For HTTP, this typically means Problem Details (RFC 9457):
 
-```
+```typescript
 mapError(error: PostError): HttpResponse:
   match error:
     PostError.EmptyTitle =>

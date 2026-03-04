@@ -14,14 +14,17 @@ Without libraries, validation code is repetitive:
 
 ```typescript
 // Manual validation - lots of boilerplate
+// @ts-ignore — intentionally incomplete example for illustration
 function validateUser(input: unknown): User {
   if (typeof input !== 'object' || input === null) {
     throw new Error('Invalid input');
   }
-  if (typeof input.name !== 'string' || input.name.length < 2) {
+  // Note: TypeScript still types 'input' as object after the guard,
+  // so property access would error. This is intentional to show the "bad" pattern.
+  if (typeof (input as any).name !== 'string' || (input as any).name.length < 2) {
     throw new Error('Name must be at least 2 characters');
   }
-  if (!input.email.includes('@')) {
+  if (!(input as any).email.includes('@')) {
     throw new Error('Invalid email');
   }
   // ... more checks
@@ -117,7 +120,7 @@ public record Order
 | Location   | API boundary            | Domain constructors/methods          |
 | Purpose    | Sanitize external input | Enforce business rules               |
 | Examples   | Email format, required  | Order total >= 0, status transitions |
-| Error type | ValidationError (400)   | DomainException (422/500)            |
+| Error type | ValidationError (400)   | DomainException (422)                |
 | Library    | Validation library      | Domain code                          |
 
 ---

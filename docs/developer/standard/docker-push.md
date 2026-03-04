@@ -3,8 +3,6 @@ id: docker-push
 title: Docker Push
 ---
 
-# Docker Push
-
 This document describes the Docker image build and push pattern used in the workspace template.
 
 ## Overview
@@ -56,13 +54,13 @@ Images are tagged based on the build context:
 
 ### Image Path
 
-```
+```text
 ghcr.io/{github_repo}/{image_name}
 ```
 
 For example, if the repository is `AtomiCloud/my-service` and `image_name` is `api`:
 
-```
+```text
 ghcr.io/atomicloud/my-service/api
 ```
 

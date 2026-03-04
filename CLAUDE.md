@@ -10,7 +10,7 @@ This repository stores shared files and conventions used across all AtomiCloud r
 
 ## Structure
 
-```
+```text
 templates/
 ├── .claude/
 │   └── skills/          # Skill definitions (triggers)

@@ -26,21 +26,21 @@ invocation:
 
 ### Common Operations
 
-| Operation | TypeScript (Lodash) | C# (LINQ)        | Go (slices/lo)      |
-| --------- | ------------------- | ---------------- | ------------------- |
-| Filter    | `filter`            | `Where`          | `lo.Filter`         |
-| Map       | `map`               | `Select`         | `lo.Map`            |
-| Reduce    | `reduce`            | `Aggregate`      | `lo.Reduce`         |
-| Find      | `find`              | `FirstOrDefault` | `lo.Find`           |
-| Group     | `groupBy`           | `GroupBy`        | `lo.GroupBy`        |
-| Sort      | `sortBy`            | `OrderBy`        | `slices.SortFunc`   |
-| Unique    | `uniq`              | `Distinct`       | `lo.Uniq`           |
-| Flatten   | `flatten`           | `SelectMany`     | `lo.Flatten`        |
-| Chunk     | `chunk`             | `Chunk`          | `lo.Chunk`          |
-| Contains  | `includes`          | `Contains`       | `slices.Contains`   |
-| Keys      | `keys`              | `dict.Keys` †    | `maps.Keys`         |
-| Values    | `values`            | `dict.Values` †  | `maps.Values`       |
-| Pick/Omit | `pick`/`omit`       | -                | `lo.Pick`/`lo.Omit` |
+| Operation | TypeScript (Lodash) | C# (LINQ)        | Go (slices/lo)                                  |
+| --------- | ------------------- | ---------------- | ----------------------------------------------- |
+| Filter    | `filter`            | `Where`          | `lo.Filter`                                     |
+| Map       | `map`               | `Select`         | `lo.Map`                                        |
+| Reduce    | `reduce`            | `Aggregate`      | `lo.Reduce`                                     |
+| Find      | `find`              | `FirstOrDefault` | `lo.Find`                                       |
+| Group     | `groupBy`           | `GroupBy`        | `lo.GroupBy`                                    |
+| Sort      | `sortBy`            | `OrderBy`        | `slices.SortFunc`                               |
+| Unique    | `uniq`              | `Distinct`       | `lo.Uniq`                                       |
+| Flatten   | `flatten`           | `SelectMany`     | `lo.Flatten`                                    |
+| Chunk     | `chunk`             | `Chunk`          | `lo.Chunk`                                      |
+| Contains  | `includes`          | `Contains`       | `slices.Contains`                               |
+| Keys      | `keys`              | `dict.Keys` †    | `slices.Collect(maps.Keys(m))` or `lo.Keys`     |
+| Values    | `values`            | `dict.Values` †  | `slices.Collect(maps.Values(m))` or `lo.Values` |
+| Pick/Omit | `pick`/`omit`       | -                | `lo.PickByKeys`/`lo.OmitByKeys`                 |
 
 † Dictionary properties, not LINQ operators
 
@@ -64,7 +64,7 @@ invocation:
 
 ## See Also
 
-Full documentation: [utilities/](../../../docs/developer/standard/utilities/)
+Language-specific docs: [TypeScript](../../../docs/developer/standard/utilities/languages/typescript.md) | [C#](../../../docs/developer/standard/utilities/languages/csharp.md) | [Go](../../../docs/developer/standard/utilities/languages/go.md)
 
 Related skills:
 

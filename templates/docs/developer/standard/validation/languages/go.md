@@ -10,6 +10,9 @@ go get github.com/go-playground/validator/v10
 
 ```go
 import (
+    "errors"
+    "fmt"
+
     "github.com/go-playground/validator/v10"
 )
 ```
@@ -26,13 +29,17 @@ type User struct {
 }
 
 // Validate
+// NOTE: Create validator once at startup — it caches struct metadata and is thread-safe.
 validate := validator.New()
 err := validate.Struct(user)
 
 if err != nil {
-    // Handle validation errors
-    for _, err := range err.(validator.ValidationErrors) {
-        fmt.Printf("Field: %s, Tag: %s, Value: %v\n", err.Field(), err.Tag(), err.Value())
+    // Use errors.As for safe type checking
+    var validationErrors validator.ValidationErrors
+    if errors.As(err, &validationErrors) {
+        for _, e := range validationErrors {
+            fmt.Printf("Field: %s, Tag: %s, Value: %v\n", e.Field(), e.Tag(), e.Value())
+        }
     }
 }
 ```
@@ -40,13 +47,18 @@ if err != nil {
 ### Variable Validation
 
 ```go
-// Validate single variable
+// Validate single variable (each check independent)
 err := validate.Var(email, "required,email")
-err := validate.Var(age, "gte=0,lte=150")
-err := validate.Var(name, "required,min=2,max=100")
+if err != nil { /* handle */ }
+
+err = validate.Var(age, "gte=0,lte=150")
+if err != nil { /* handle */ }
+
+err = validate.Var(name, "required,min=2,max=100")
+if err != nil { /* handle */ }
 
 // Validate multiple variables
-err := validate.VarWithValue(password, confirmPassword, "eqfield")
+err = validate.VarWithValue(password, confirmPassword, "eqfield")
 ```
 
 ## Built-In Validators
@@ -146,7 +158,7 @@ type Request struct {
 ```go
 type User struct {
     Name    string  `validate:"required"`
-    Address Address `validate:"required"` // Address fields also validated
+    Address Address // Nested fields are always recursively validated; required only rejects zero-value
 }
 
 type Address struct {
@@ -174,6 +186,12 @@ type DateRange struct {
 ### Register Custom Validator
 
 ```go
+import (
+    "regexp"
+
+    "github.com/go-playground/validator/v10"
+)
+
 validate := validator.New()
 
 // Register custom validation function
@@ -285,9 +303,9 @@ func getErrorMessage(e validator.FieldError) string {
     case "email":
         return "Invalid email format"
     case "min":
-        return fmt.Sprintf("%s must be at least %s characters", e.Field(), e.Param())
+        return fmt.Sprintf("%s must be at least %s", e.Field(), e.Param())
     case "max":
-        return fmt.Sprintf("%s must be at most %s characters", e.Field(), e.Param())
+        return fmt.Sprintf("%s must be at most %s", e.Field(), e.Param())
     case "gtfield":
         return fmt.Sprintf("%s must be greater than %s", e.Field(), e.Param())
     default:
@@ -309,11 +327,11 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
     }
 
     if err := h.validate.Struct(req); err != nil {
-        errors := FormatErrors(err)
+        validationErrs := FormatErrors(err)
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusBadRequest)
         json.NewEncoder(w).Encode(map[string]interface{}{
-            "errors": errors,
+            "errors": validationErrs,
         })
         return
     }
@@ -327,7 +345,12 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 ```go
 // ValidateRequest accepts a factory function to create a fresh struct per request
-func ValidateRequest(validate *validator.Validate, reqFactory func() interface{}) mux.MiddlewareFunc {
+// Returns standard http.Handler middleware (works with any router)
+type contextKey string
+
+const validatedRequestKey contextKey = "validatedRequest"
+
+func ValidateRequest(validate *validator.Validate, reqFactory func() interface{}) func(http.Handler) http.Handler {
     return func(next http.Handler) http.Handler {
         return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
             // Create a fresh instance for each request
@@ -343,8 +366,8 @@ func ValidateRequest(validate *validator.Validate, reqFactory func() interface{}
                 return
             }
 
-            // Put validated request in context
-            ctx := context.WithValue(r.Context(), "validatedRequest", req)
+            // Put validated request in context (with typed key to avoid collisions)
+            ctx := context.WithValue(r.Context(), validatedRequestKey, req)
             next.ServeHTTP(w, r.WithContext(ctx))
         })
     }

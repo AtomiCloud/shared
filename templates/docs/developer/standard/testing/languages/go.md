@@ -1,6 +1,6 @@
 # Testing in Go
 
-## Framework: `testing` + testify
+## Framework: testing + testify
 
 ## Test Structure: testify suite = describe, method = it
 
@@ -184,18 +184,24 @@ func (s *TaskRepositoryContractSuite) SetupTest() {
 func (s *TaskRepositoryContractSuite) TestIt_should_save_and_retrieve_by_id() {
     input := TaskPrincipal{Id: uuid.New().String(), Record: TaskRecord{Name: "test", Priority: "medium"}}
 
-    s.subject.Save(context.Background(), input)
-    actual, _ := s.subject.FindById(context.Background(), input.Id)
+    err := s.subject.Save(context.Background(), input)
+    s.Require().NoError(err)
 
-    s.Assert().NotNil(actual)
+    actual, err := s.subject.FindById(context.Background(), input.Id)
+    s.Require().NoError(err)
+    s.Require().NotNil(actual)
+
     s.Assert().Equal(input.Record.Name, actual.Record.Name)
 }
 
 func (s *TaskRepositoryContractSuite) TestIt_should_list_all_saved_tasks() {
-    s.subject.Save(context.Background(), TaskPrincipal{Id: uuid.New().String(), Record: TaskRecord{Name: "task-1"}})
-    s.subject.Save(context.Background(), TaskPrincipal{Id: uuid.New().String(), Record: TaskRecord{Name: "task-2"}})
+    err := s.subject.Save(context.Background(), TaskPrincipal{Id: uuid.New().String(), Record: TaskRecord{Name: "task-1"}})
+    s.Require().NoError(err)
+    err = s.subject.Save(context.Background(), TaskPrincipal{Id: uuid.New().String(), Record: TaskRecord{Name: "task-2"}})
+    s.Require().NoError(err)
 
-    actual, _ := s.subject.FindAll(context.Background())
+    actual, err := s.subject.FindAll(context.Background())
+    s.Require().NoError(err)
 
     s.Assert().Len(actual, 2)
 }
@@ -222,10 +228,13 @@ type FileTaskRepositorySuite struct {
 }
 
 func (s *FileTaskRepositorySuite) SetupSuite() {
-    s.tempDir, _ = os.MkdirTemp("", "task-repo-*")
-    fs := &FileSystemAdapter{}
+    var err error
+    s.tempDir, err = os.MkdirTemp("", "task-repo-*")
+    s.Require().NoError(err)
     s.createRepo = func() TaskRepository {
-        return NewFileTaskRepository(fs, &TaskRepoMapper{}, filepath.Join(s.tempDir, "tasks.json"))
+        // Use unique file per test to avoid state leakage
+        path := filepath.Join(s.tempDir, fmt.Sprintf("tasks-%s.json", uuid.New().String()))
+        return NewFileTaskRepository(&FileSystemAdapter{}, &TaskRepoMapper{}, path)
     }
 }
 
@@ -266,9 +275,11 @@ import (
     "context"
     "testing"
 
+    "github.com/jackc/pgx/v5/pgxpool"
+    "github.com/stretchr/testify/suite"
     "github.com/testcontainers/testcontainers-go"
     "github.com/testcontainers/testcontainers-go/modules/postgres"
-    "github.com/stretchr/testify/suite"
+    "github.com/testcontainers/testcontainers-go/wait"
 )
 
 type PostRepositorySuite struct {
@@ -281,24 +292,29 @@ type PostRepositorySuite struct {
 func (s *PostRepositorySuite) SetupSuite() {
     ctx := context.Background()
 
-    container, _ := postgres.Run(ctx, "postgres:16",
+    container, err := postgres.Run(ctx, "postgres:16",
+        testcontainers.WithWaitStrategy(wait.ForLog("database system is ready to accept connections").WithOccurrence(2)),
         postgres.WithDatabase("testdb"),
         postgres.WithUsername("postgres"),
         postgres.WithPassword("test"),
     )
+    s.Require().NoError(err)
     s.container = container
 
-    connStr, _ := container.ConnectionString(ctx, "sslmode=disable")
-    pool, _ := pgxpool.New(ctx, connStr)
+    connStr, err := container.ConnectionString(ctx, "sslmode=disable")
+    s.Require().NoError(err)
+    pool, err := pgxpool.New(ctx, connStr)
+    s.Require().NoError(err)
     s.pool = pool
 
-    pool.Exec(ctx, "CREATE TABLE posts (id TEXT PRIMARY KEY, title TEXT, description TEXT)")
+    _, err = pool.Exec(ctx, "CREATE TABLE posts (id TEXT PRIMARY KEY, title TEXT, description TEXT)")
+    s.Require().NoError(err)
     s.subject = NewPostRepository(pool, &PostRepoMapper{})
 }
 
 func (s *PostRepositorySuite) TearDownSuite() {
     s.pool.Close()
-    s.container.Terminate(context.Background())
+    testcontainers.CleanupContainer(s.T(), s.container)
 }
 
 func (s *PostRepositorySuite) TestIt_should_persist_and_retrieve_post() {

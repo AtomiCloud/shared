@@ -1,6 +1,6 @@
 # The Dependency Model
 
-**Part 2 of 8: The AtomiCloud Engineering Series**
+Part 2 of 8: The AtomiCloud Engineering Series
 
 _[Part 1](./part-1-software-design-philosophy.md) established locality as the goal -- keeping related things together, unrelated things apart. Dependencies are what connect code. This part introduces a model for thinking about dependencies: two dimensions that determine whether a dependency helps or harms locality._
 
@@ -30,7 +30,7 @@ These are mostly independent. As we will see, one particular combination turns o
 
 An implicit dependency is one you cannot see by reading the signature. You discover it by reading the implementation -- or when something breaks.
 
-```
+```typescript
 function processOrder(order):
   Logger.log("Processing order")    // implicit: Logger not in signature
   result = Database.query(...)      // implicit: Database not in signature
@@ -41,7 +41,7 @@ The signature says `processOrder(order)`. But the function also depends on `Logg
 
 An explicit dependency, by contrast, appears in a signature -- either the constructor or the method parameters. The user is _forced_ to provide it. There is no way to construct the object without knowing what it needs.
 
-```
+```typescript
 class OrderService:
   private readonly repo: IOrderRepository
   private readonly logger: ILogger
@@ -65,7 +65,7 @@ Both directions matter. The first protects the person _using_ the code. The seco
 
 A fixed dependency is hardcoded. The code decides exactly what to use, and nothing outside can change that decision.
 
-```
+```typescript
 class OrderService:
   calculateTotal(order):
     return new TaxCalculator().apply(order)  // fixed: always TaxCalculator
@@ -75,7 +75,7 @@ class OrderService:
 
 A subtler form of fixedness is the immutable singleton:
 
-```
+```typescript
 Global.TaxCalculator = new USTaxCalculator()   // set once, never changed
 
 class OrderService:
@@ -87,7 +87,7 @@ The global is immutable, so the dependency cannot be swapped at runtime. You _co
 
 A flexible dependency can be changed from outside. The code receives its dependency rather than creating it.
 
-```
+```typescript
 class OrderService:
   private readonly taxCalculator: ITaxCalculator
 
@@ -117,7 +117,7 @@ You might expect four quadrants from two binary dimensions. But one combination 
 
 **Explicit and fixed** does not exist. Think about it: if a dependency is explicit -- it appears in the constructor signature -- then the caller _provides_ it. And if the caller provides it, they can provide different things. That is flexibility by definition.
 
-```
+```typescript
 class OrderService:
   constructor(calculator: TaxCalculator):  // explicit...
     this.calculator = calculator
@@ -145,7 +145,7 @@ So start with flexibility. Everyone wants it. The question is: how do you get it
 
 There are two roads to flexible dependencies. The first is mutable globals:
 
-```
+```typescript
 var emailClient = new SmtpClient()
 
 function sendWelcome(user):
@@ -164,7 +164,7 @@ But now you have mutable global state. Any code anywhere can reassign `emailClie
 
 What is left? The only way to get flexible dependencies _without_ mutable state is to provide them at construction time:
 
-```
+```typescript
 class WelcomeService:
   private readonly client: IEmailClient
 

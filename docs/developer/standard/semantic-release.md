@@ -3,8 +3,6 @@ id: semantic-release
 title: Semantic Release
 ---
 
-# Semantic Release
-
 This document describes the semantic release workflow used in the workspace template.
 
 ## Overview

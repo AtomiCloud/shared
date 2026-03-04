@@ -1,6 +1,6 @@
 # Functional Thinking
 
-**Part 4 of 8: The AtomiCloud Engineering Series**
+Part 4 of 8: The AtomiCloud Engineering Series
 
 _[Part 3](./part-3-solid-principles.md) gave us structural rules for organizing code. Now we turn to how code behaves. Functional programming offers useful ways to think about code -- patterns that make reasoning easier and bugs less likely. These are not constraints or laws. They are guidelines that, when followed, tend to produce code with better locality._
 
@@ -29,7 +29,7 @@ The synthesis: use OO structure to organize code, use functional patterns inside
 
 You pass an object to a function, expecting it to remain unchanged. But the function modifies it:
 
-```
+```typescript
 function applyDiscount(order: Order, pct: float) -> Order:
   order.total = order.total * (1 - pct)
   return order
@@ -44,7 +44,7 @@ The caller assumed `original` would not change. That assumption was wrong, and n
 
 The fix is simple: never modify inputs, always return new values.
 
-```
+```typescript
 function applyDiscount(order: Order, pct: float) -> Order:
   return Order(
     ...order,
@@ -68,7 +68,7 @@ Even with impure functions (logging, I/O), immutable data will not be corrupted 
 
 Now consider a different problem. A function reads from global state:
 
-```
+```typescript
 global taxRate = 0.08
 
 function calculateTax(amount: Money) -> Money:
@@ -79,7 +79,7 @@ What does `calculateTax(100)` return? You cannot know without checking what `tax
 
 Make the dependency explicit:
 
-```
+```typescript
 function calculateTax(amount: Money, rate: float) -> Money:
   return amount * rate
 ```
@@ -112,7 +112,7 @@ Of course, not all code can be pure. An application that never reads from a data
 
 A function's type signature is a promise: "give me these inputs and I will return this output." But some functions lie:
 
-```
+```typescript
 function divide(a: int, b: int) -> int:
   if b == 0:
     throw DivisionByZeroError
@@ -123,7 +123,7 @@ The signature says `int, int -> int`. But for some inputs, you do not get an int
 
 Make the function honest instead. Encode all possible outcomes in the return type:
 
-```
+```typescript
 function divide(a: int, b: int) -> Result<int, DivisionError>:
   if b == 0:
     return Err(DivisionError("cannot divide by zero"))
@@ -142,7 +142,7 @@ A partial function that throws exceptions is like an implicit dependency -- hidd
 
 When functions return `Result<T, E>`, chaining them can get noisy:
 
-```
+```typescript
 function processOrder(id: string) -> Result<Invoice, OrderError>:
   orderResult = repo.getOrder(id)
   if orderResult.isErr():
@@ -162,7 +162,7 @@ function processOrder(id: string) -> Result<Invoice, OrderError>:
 
 Every step requires checking and propagating errors. The happy path is buried. Railway oriented programming gives us a better way -- think of computation as two parallel rails. The happy path runs on one rail, the error path on the other. Once you switch to the error rail, you stay there:
 
-```
+```typescript
 function processOrder(id: string) -> Result<Invoice, OrderError>:
   return repo.getOrder(id)
     .andThen(order -> validator.validate(order))
@@ -174,7 +174,7 @@ function processOrder(id: string) -> Result<Invoice, OrderError>:
 
 In a layered architecture, each layer has its own error types. Use `.mapErr()` to translate between them:
 
-```
+```typescript
 return userRepo.findById(id)                    // Result<DataModel, RepoError>
   .map(data -> toUserDomain(data))              // Result<User, RepoError>
   .mapErr(err -> toDomainError(err))            // Result<User, DomainError>

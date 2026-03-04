@@ -3,8 +3,6 @@ id: ci-cd
 title: CI/CD Workflows
 ---
 
-# CI/CD Workflows
-
 This document describes the principles and patterns for CI/CD workflows in the workspace template.
 
 ## Architecture Overview
@@ -53,7 +51,7 @@ Runs when a new version tag is pushed. Handles deployment:
 
 ## The Execution Pattern
 
-```
+```text
 Setup Nix -> Setup Caches -> nix develop -c ./scripts/ci/script.sh
 ```
 
@@ -188,7 +186,7 @@ This allows developers to:
 
 ## Directory Structure
 
-```
+```text
 .github/
 └── workflows/
     ├── ci.yml                     # Main CI workflow

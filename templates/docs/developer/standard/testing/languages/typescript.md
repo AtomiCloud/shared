@@ -254,8 +254,8 @@ describe('PostRepository (Postgres)', () => {
 
 ## Test Folder Structure
 
-| Test Type   | Location            |
-| ----------- | ------------------- |
-| Unit        | `test/unit/`        |
-| Functional  | `test/unit/` (same) |
-| Integration | `test/integration/` |
+| Test Type   | Location             |
+| ----------- | -------------------- |
+| Unit        | `tests/unit/`        |
+| Functional  | `tests/unit/`        |
+| Integration | `tests/integration/` |

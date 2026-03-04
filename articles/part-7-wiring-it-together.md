@@ -1,6 +1,6 @@
 # Wiring It Together
 
-**Part 7 of 8: The AtomiCloud Engineering Series**
+Part 7 of 8: The AtomiCloud Engineering Series
 
 _We have the architecture: three layers, mappers, pure domain. Now we need to actually build the thing. This part shows how services are constructed, how dependencies flow, and how the entire application comes together at a single point -- the composition root._
 
@@ -26,7 +26,7 @@ A service is a class with two kinds of members:
 
 Both are set in the constructor and never changed. The service holds no mutable state.
 
-```
+```typescript
 class OrderService:
   private readonly repo: IOrderRepository
   private readonly pricing: IPricingService
@@ -59,7 +59,7 @@ The composition root is your application's big bang.
 
 It is a single point -- `main()`, the application bootstrap, a DI container configuration -- where **every service in the system is created, wired together, and frozen**. After this moment, no new services are created. No dependencies change. The structure of the universe is set.
 
-```
+```typescript
 function main():
   // Layer 0: Infrastructure — the raw materials
   db = new PostgresDatabase(config.connectionString)

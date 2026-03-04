@@ -44,6 +44,7 @@ var utcNow = DateTimeOffset.UtcNow;     // Offset = +00:00
 var specific = new DateTimeOffset(2024, 3, 15, 14, 30, 0, TimeSpan.FromHours(-5));
 
 // From DateTime
+var dateTime = new DateTime(2024, 3, 15, 14, 30, 0, DateTimeKind.Unspecified);
 var fromDateTime = new DateTimeOffset(dateTime, TimeSpan.FromHours(-5));
 
 // Components
@@ -88,7 +89,7 @@ date.ToString("yyyy-MM-dd"); // "2024-03-15"
 
 ### TimeOnly
 
-Time without date component (NET 6+).
+Time without date component (.NET 6+).
 
 ```csharp
 // Create
@@ -220,7 +221,8 @@ var localTime = TimeZoneInfo.ConvertTime(order.CreatedAt, userZone);
 ## JSON Serialization
 
 ```csharp
-// System.Text.Json handles these automatically
+// System.Text.Json handles these automatically (.NET 7+)
+// For .NET 6, register custom JsonConverter for DateOnly/TimeOnly
 public record Event(
     DateTimeOffset Timestamp,
     DateOnly EventDate,

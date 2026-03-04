@@ -36,7 +36,7 @@ Every concept in your system deserves a proper noun. Vague words breed confusion
 Ubiquitous language extends beyond domain types. AtomiCloud uses arbitrary names for cross-cutting concepts precisely to avoid overloaded terms:
 
 - **Chemical elements** for projects (hydrogen, helium, lithium)
-- **Pokemon** for environments (pikachu, charmander, squirtle)
+- **Pokémon** for environments (pikachu, charmander, squirtle)
 
 These names carry no pre-existing baggage. When a name has exactly one meaning in your codebase, ambiguity disappears.
 
@@ -78,15 +78,15 @@ See [Stateless OOP and Dependency Injection](../stateless-oop-di/index.md) for t
 
 ---
 
-## Records, Principals, and Aggregate Roots
+## Records, Principals, and Models
 
 Three levels of structure appear in every CRUD-oriented domain. These correspond loosely to DDD's value objects, entities, and aggregate roots -- but with important differences.
 
-### Records (Updateable Data)
+### Records (Domain Data)
 
-A Record is a structure with no identity. It contains every field that a Create or Update form would ask for.
+A Record is a structure with no identity. It contains the fields that a single create or update operation acts on. When fields have meaningfully different update rates, they are split into separate Records (see Multiple Records per Entity below).
 
-```
+```text
 PostRecord:
   title: string
   description: string
@@ -107,7 +107,7 @@ Records deliberately exclude the identifier because:
 
 An entity can have **multiple Records** when its fields have different **rates of change**. Separating records by update frequency improves cache efficiency, reduces optimistic locking conflicts, and clarifies which operations affect which data.
 
-```
+```text
 // User has 3 records with different update rates
 
 UserRecord:              // Frequently changed by user
@@ -117,7 +117,7 @@ UserRecord:              // Frequently changed by user
 
 UserImmutableRecord:     // Locked at creation, never changes
   email: string
-  createdAt: timestamp
+  // Note: createdAt is system-assigned at signup, not user-supplied
 
 UserSyncRecord:          // Updated by external sync, infrequent
   stripeCustomerId: string
@@ -135,7 +135,7 @@ UserSyncRecord:          // Updated by external sync, infrequent
 
 The Principal holds all records together:
 
-```
+```text
 UserPrincipal:
   id: uuid
   record: UserRecord           // Mutable profile data
@@ -150,25 +150,37 @@ This separation enables:
 - **Concurrency**: Profile updates don't conflict with sync updates
 - **Clear ownership**: API layer updates `UserRecord`, sync service updates `UserSyncRecord`
 
+**Multi-record service pattern:**
+
+> **Note:** Result type library to be determined. The signatures below use `Result<T>` as placeholder syntax.
+
+```text
+// Each record type has its own update method
+interface IUserService {
+  getProfile(id: uuid): Result<UserPrincipal>          // placeholder — Result type TBD
+  updateProfile(id: uuid, record: UserRecord): Result<UserPrincipal>
+  updateSync(id: uuid, record: UserSyncRecord): Result<UserPrincipal>
+  // UserImmutableRecord never updated — set only at creation
+}
+```
+
 ### Principals (Records with Identity)
 
 A Principal is one or more Records with an ID. It represents the entity as stored in a database.
 
 **Single Record (simple entity):**
 
-```
-PostPrincipal:
-  id: uuid
-  record: PostRecord
+```typescript
+PostPrincipal: id: uuid;
+record: PostRecord;
 
-AuthorPrincipal:
-  id: uuid
-  record: AuthorRecord
+AuthorPrincipal: id: uuid;
+record: AuthorRecord;
 ```
 
 **Multiple Records (entity with different update rates):**
 
-```
+```text
 UserPrincipal:
   id: uuid
   record: UserRecord           // Mutable profile
@@ -180,21 +192,21 @@ The identity makes a Principal unique even when its record data changes. Post #4
 
 Principals are the **primary unit of storage and retrieval**. A database table maps directly to a Principal: the primary key is the `id`, and the remaining columns come from the Record(s).
 
-### Aggregate Roots (Assembled Views)
+### Models (Assembled Views)
 
-An Aggregate Root is a view that shows a Principal together with its related Principals. It represents the **full picture** of a concept as needed by a particular use-case.
+A Model is a view that shows a Principal together with its related Principals. It represents the **full picture** of a concept as needed by a particular use-case.
 
-```
-Post:                    // Aggregate root for viewing a post
+```typescript
+Post:                    // Model for viewing a post
   principal: PostPrincipal
   author: AuthorPrincipal
 
-Author:                  // Aggregate root for viewing an author
+Author:                  // Model for viewing an author
   principal: AuthorPrincipal
   posts: PostPrincipal[]
 ```
 
-`Post` and `Author` are two different aggregate roots that reference each other's principals. They are **views** -- shaped by what the consuming service needs.
+`Post` and `Author` are two different Models that reference each other's principals. They are **views** -- shaped by what the consuming service needs.
 
 ---
 
@@ -202,17 +214,17 @@ Author:                  // Aggregate root for viewing an author
 
 With three structure types defined, we can map the five standard CRUD operations to the types they consume and produce.
 
-| Operation  | Input          | Output          | Why?                                               |
-| ---------- | -------------- | --------------- | -------------------------------------------------- |
-| **Search** | Search params  | `Principal[]`   | Single table, no joins, fast for lists             |
-| **Get**    | `id`           | `AggregateRoot` | Full view with related data                        |
-| **Create** | `Record`       | `AggregateRoot` | No ID needed -- system generates it                |
-| **Update** | `id`, `Record` | `AggregateRoot` | ID is separate because identity cannot be replaced |
-| **Delete** | `id`           | `void`          | Nothing to return                                  |
+| Operation  | Input          | Output        | Why?                                               |
+| ---------- | -------------- | ------------- | -------------------------------------------------- |
+| **Search** | Search params  | `Principal[]` | Single table, no joins, fast for lists             |
+| **Get**    | `id`           | `Model`       | Full view with related data                        |
+| **Create** | `Record`       | `Model`       | No ID needed -- system generates it                |
+| **Update** | `id`, `Record` | `Model`       | ID is separate because identity cannot be replaced |
+| **Delete** | `id`           | `void`        | Nothing to return                                  |
 
 ### Service Interface Example
 
-```
+```typescript
 interface PostService:
   search(params: PostSearch): Result<PostPrincipal[]>
   get(id: uuid): Result<Post?>
@@ -223,7 +235,7 @@ interface PostService:
 
 And the corresponding repository interface follows the same shape:
 
-```
+```typescript
 interface PostRepository:
   search(params: PostSearch): Result<PostPrincipal[]>
   get(id: uuid): Result<Post?>
@@ -232,7 +244,7 @@ interface PostRepository:
   delete(id: uuid): Result<void?>
 ```
 
-The service orchestrates business rules; the repository handles persistence. Both speak the same language of Records, Principals, and Aggregate Roots. See [Three-Layer Architecture](../three-layer-architecture/index.md) for how these layers connect.
+The service orchestrates business rules; the repository handles persistence. Both speak the same language of Records, Principals, and Models. See [Three-Layer Architecture](../three-layer-architecture/index.md) for how these layers connect.
 
 ---
 
@@ -246,10 +258,10 @@ Before calling a domain complete, verify:
 - [ ] **Two classes.** Services have behaviour and receive dependencies via constructor. Structures are pure data passed as arguments.
 - [ ] **Records defined.** Every entity has at least one Record containing its updateable fields (no ID). Entities with different update rates may have multiple Records.
 - [ ] **Principals defined.** Every entity has a Principal combining its identity with its Record(s). Single Record for simple entities, multiple Records for entities with different update rates.
-- [ ] **Aggregate roots defined.** Every entity that needs related data has an Aggregate Root assembling the relevant Principals.
+- [ ] **Models defined.** Every entity that needs related data has a Model assembling the relevant Principals.
 - [ ] **CRUD mapping followed.** Search returns Principals. Get/Create/Update return Aggregate Roots. Delete returns nothing.
 - [ ] **No identity in Records.** The `id` field lives in the Principal, never in the Record.
-- [ ] **Aggregate roots as views.** Different services may define different aggregate roots for the same Principal, each shaped to its needs.
+- [ ] **Models as views.** Different services may define different Models for the same Principal, each shaped to its needs.
 
 ---
 

@@ -31,11 +31,11 @@ Each section must be explicitly commented (`// Arrange`, `// Act`, `// Assert`).
 
 ## Frameworks
 
-| Language       | Unit + Functional        | Integration                 | SIT | E2E        |
-| -------------- | ------------------------ | --------------------------- | --- | ---------- |
-| TypeScript/Bun | `bun:test` + `should`    | `bun:test` + Testcontainers | k6  | Playwright |
-| C#/.NET        | xUnit + FluentAssertions | xUnit + Testcontainers      | k6  | Playwright |
-| Go             | `testing` + testify      | `testing` + testify + TC    | k6  | Playwright |
+| Language       | Unit + Functional        | Integration                          | SIT | E2E        |
+| -------------- | ------------------------ | ------------------------------------ | --- | ---------- |
+| TypeScript/Bun | `bun:test` + `should`    | `bun:test` + Testcontainers          | k6  | Playwright |
+| C#/.NET        | xUnit + FluentAssertions | xUnit + Testcontainers               | k6  | Playwright |
+| Go             | `testing` + testify      | `testing` + testify + Testcontainers | k6  | Playwright |
 
 ## Mock Patterns
 
@@ -59,7 +59,7 @@ Each section must be explicitly commented (`// Arrange`, `// Act`, `// Assert`).
 
 | Language   | Unit + Functional                    | Integration                                         |
 | ---------- | ------------------------------------ | --------------------------------------------------- |
-| TypeScript | `test/unit/`, `test/integration/`    | `test/integration/`                                 |
+| TypeScript | `tests/unit/`                        | `tests/integration/`                                |
 | C#         | `{Service}.UnitTest/` project        | `{Service}.IntTest/` project                        |
 | Go         | `lib/` (`_test.go` alongside domain) | `adapters/` (`_test.go` + `//go:build integration`) |
 

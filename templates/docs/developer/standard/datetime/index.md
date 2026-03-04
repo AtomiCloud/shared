@@ -48,7 +48,7 @@ A time of day without date or timezone. Represents "what time on a clock."
 
 ### DateTime
 
-A combination of date and time. Can be timezone-aware or timezone-naive.
+A combination of date and time. It can be timezone-aware or timezone-naive.
 
 **Warning:** Timezone-naive DateTimes are ambiguous. Always prefer timezone-aware types.
 
@@ -110,7 +110,7 @@ The type you choose depends on **what you're representing** and **where the valu
 
 | Use Case            | What to Store                     | Where to Store                                  | Why                                                          |
 | ------------------- | --------------------------------- | ----------------------------------------------- | ------------------------------------------------------------ |
-| **Birthday**        | `Date` + `Timezone`               | Date on entity, TZ for context                  | Only need calendar date; TZ provides "start of day" context  |
+| **Birthday**        | `Date` (optional TZ separately)   | Date on entity                                  | Calendar date only; optional TZ for "start of day" context   |
 | **Alarm/Reminder**  | `Time` + `DayOfWeek` + `Timezone` | Time/DoW on alarm entity, **TZ on user/device** | When user moves countries, alarm fires at correct local time |
 | **Event Timestamp** | `Instant`                         | On the event entity                             | Point-in-time, globally unambiguous, sortable                |
 | **Meeting**         | `DateTime` + `Timezone`           | Both on meeting entity                          | Specific date+time at a location                             |
@@ -191,11 +191,12 @@ const createdAt = Temporal.Now.instant();
 During DST "spring forward," 2:00 AM becomes 3:00 AM—some times don't exist. During "fall back," 2:00 AM happens twice.
 
 ```csharp
-// WRONG - May fail during DST transition
-var nextDay = dateTime.AddDays(1);
+// WRONG - DateTime.Now has ambiguous Kind = Local
+var now = DateTime.Now;
+var nextDay = now.AddDays(1);
 
-// RIGHT - Use UTC to avoid DST issues
-var nextDay = DateTimeOffset.UtcNow.AddHours(24);
+// RIGHT - Use DateTimeOffset for unambiguous UTC representation
+var nextDay = DateTimeOffset.UtcNow.AddDays(1);
 ```
 
 ### 3. Birthday Timezone Problem
@@ -203,9 +204,11 @@ var nextDay = DateTimeOffset.UtcNow.AddHours(24);
 If a user's birthday is March 15, it should remain March 15 regardless of timezone.
 
 ```go
-// Use carbon.Date for birthdays - no time or timezone
-birthday := carbon.Date{Year: 1990, Month: 3, Day: 15}
+// Go has NO true DateOnly type. Use time.Time at UTC midnight with convention.
+birthday := time.Date(1990, 3, 15, 0, 0, 0, 0, time.UTC)
 ```
+
+> ⚠️ **Go Limitation**: Unlike C# (`DateOnly`) and TypeScript (`Temporal.PlainDate`), Go has no true date-only type. Always use `time.Time` at midnight UTC.
 
 ### 4. Ambiguous `DateTime.Now`
 
@@ -248,13 +251,13 @@ This ensures:
 
 **For Dates (birthdays, holidays):**
 
-- [ ] Use Date-only type (PlainDate, DateOnly, carbon.Date)
-- [ ] No time component
+- [ ] Use Date-only type (PlainDate, DateOnly) — or `time.Time` at UTC midnight for Go
+- [ ] No time component (or midnight UTC convention for Go)
 - [ ] No timezone component
 
 **For Times (daily schedules):**
 
-- [ ] Use Time-only type (PlainTime, TimeOnly, carbon.Time)
+- [ ] Use Time-only type (PlainTime, TimeOnly) — or string/duration convention for Go
 - [ ] Consider timezone for display
 
 **For Durations:**
@@ -268,9 +271,9 @@ This ensures:
 
 See language-specific guides for implementation details:
 
-- [TypeScript/Bun](./languages/typescript.md) — Temporal API via `@js-temporal/polyfill`
-- [C#/.NET](./languages/csharp.md) — Native types: DateTime, DateTimeOffset, DateOnly, TimeOnly
-- [Go](./languages/go.md) — Carbon library (`dromara/carbon/v2`) + `time.Duration`
+- [TypeScript/Bun](./languages/typescript.md) — Temporal API via `@js-temporal/polyfill` (has `PlainDate`, `PlainTime`)
+- [C#/.NET](./languages/csharp.md) — Native types: DateTime, DateTimeOffset, **DateOnly**, **TimeOnly** (.NET 6+)
+- [Go](./languages/go.md) — Standard library `time` package — **no true DateOnly/TimeOnly types**
 
 ## Related Articles
 

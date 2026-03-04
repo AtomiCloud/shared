@@ -1,6 +1,6 @@
 # Utilities in Go
 
-## Standard Library: `slices` and `maps` (Go 1.21+)
+## Standard Library: `slices` and `maps` (Go 1.21+; iterator API requires Go 1.23+)
 
 Use standard library packages for basic operations. Use `samber/lo` for functional operations.
 
@@ -18,7 +18,9 @@ import (
 ```go
 // Check if slice contains element
 found := slices.Contains(items, "target")
-found := slices.ContainsFunc(items, func(x T) bool { return x.Active })
+
+// Check with predicate
+foundByPredicate := slices.ContainsFunc(items, func(x T) bool { return x.Active })
 ```
 
 ### Sort
@@ -61,10 +63,10 @@ copy := slices.Clone(items)
 
 // Compare slices
 equal := slices.Equal(a, b)
-equal := slices.EqualFunc(a, b, func(x, y T) bool { return x.ID == y.ID })
+equalByID := slices.EqualFunc(a, b, func(x, y T) bool { return x.ID == y.ID })
 
 // Compare for ordering
-cmp := slices.Compare(a, b) // -1, 0, 1
+cmpResult := slices.Compare(a, b) // -1, 0, 1
 ```
 
 ### Compact (Remove consecutive duplicates)
@@ -84,7 +86,7 @@ items = slices.CompactFunc(items, func(a, b Item) bool {
 ```go
 // Find index
 idx := slices.Index(items, target)
-idx := slices.IndexFunc(items, func(x T) bool { return x.Active })
+idxByPredicate := slices.IndexFunc(items, func(x T) bool { return x.Active })
 
 // Replace elements
 items = slices.Replace(items, 2, 4, newItem)
@@ -134,7 +136,7 @@ maps.Copy(dst, src)
 
 ```go
 equal := maps.Equal(a, b)
-equal := maps.EqualFunc(a, b, func(v1, v2 V) bool {
+equalByID := maps.EqualFunc(a, b, func(v1, v2 V) bool {
     return v1.ID == v2.ID
 })
 ```
@@ -153,7 +155,7 @@ maps.DeleteFunc(m, func(k string, v Item) bool {
 For functional operations not in stdlib.
 
 ```bash
-go get github.com/samber/lo@v1.39.0
+go get github.com/samber/lo@v1.52.0
 ```
 
 ```go
@@ -188,7 +190,7 @@ if ok {
 }
 
 // With default
-item := lo.FindOrElse(items, defaultItem, func(x Item) bool {
+itemWithDefault := lo.FindOrElse(items, defaultItem, func(x Item) bool {
     return x.ID == "123"
 })
 ```
@@ -224,7 +226,7 @@ flat := lo.Flatten(nested) // []T from [][]T
 unique := lo.Uniq(items)
 
 // Uniq by property
-unique := lo.UniqBy(items, func(item Item) string {
+uniqueByEmail := lo.UniqBy(items, func(item Item) string {
     return item.Email
 })
 ```
@@ -251,7 +253,7 @@ omitted := lo.OmitBy(m, func(k string, v Item) bool {
 
 ```go
 contains := lo.Contains(items, target)
-contains := lo.ContainsBy(items, func(x Item) bool {
+containsByPredicate := lo.ContainsBy(items, func(x Item) bool {
     return x.ID == "123"
 })
 ```
@@ -275,23 +277,27 @@ shuffled := lo.Shuffle(items)
 
 ```go
 idx := lo.IndexOf(items, target)
-idx := lo.LastIndexOf(items, target)
+lastIdx := lo.LastIndexOf(items, target)
 
-idx := lo.IndexOfBy(items, func(x Item) bool {
+// FindIndexOf — predicate-based index lookup (returns item, index, found)
+item, idx, found := lo.FindIndexOf(items, func(x Item) bool {
     return x.ID == "123"
 })
+if found {
+    // Use idx
+}
 ```
 
 ### SliceToMap, Associate
 
 ```go
 // Convert slice to map
-m := lo.SliceToMap(items, func(item Item) (string, Item) {
+idMap := lo.SliceToMap(items, func(item Item) (string, Item) {
     return item.ID, item
 })
 
-// Associate - same as SliceToMap with different signature
-m := lo.Associate(items, func(item Item) (string, string) {
+// Associate - alias for SliceToMap
+nameMap := lo.Associate(items, func(item Item) (string, string) {
     return item.ID, item.Name
 })
 ```
@@ -302,9 +308,9 @@ m := lo.Associate(items, func(item Item) (string, string) {
 repeated := lo.Repeat(3, item) // [item, item, item]
 
 // Range of numbers
-nums := lo.Range(5)            // [0, 1, 2, 3, 4]
-nums := lo.RangeFrom(10, 3)    // [10, 11, 12]
-nums := lo.RangeWithSteps(0, 10, 2) // [0, 2, 4, 6, 8]
+nums := lo.Range(5)                  // [0, 1, 2, 3, 4]
+numsFrom := lo.RangeFrom(10, 3)      // [10, 11, 12]
+numsWithStep := lo.RangeWithSteps(0, 10, 2) // [0, 2, 4, 6, 8]
 ```
 
 ## Best Practices
@@ -354,7 +360,9 @@ result := lo.Filter(
 )
 
 // Or break into steps for readability
-dtos := lo.Map(users, ToDTO)
+dtos := lo.Map(users, func(u User, _ int) UserDTO {
+    return ToDTO(u)
+})
 active := lo.Filter(dtos, func(dto UserDTO, _ int) bool {
     return dto.Active
 })

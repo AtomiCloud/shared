@@ -22,7 +22,7 @@ This is not an abstract ideal. A codebase that is easy to change lets you ship f
 
 Think of it like a physicist studying a magnetic field. When calculating the force at a specific point, they don't need to know the state of every particle in the universe. They only need to know the field in the area of interest. The field is an abstraction that captures all the relevant information locally.
 
-```
+```text
 Without locality:      To understand A, you must understand B, C, D, E...
                        To understand B, you must understand F, G, H...
                        (infinite regress)
@@ -46,7 +46,7 @@ Everything in code is a dependency. When function `A` calls function `B`, then `
 
 Consider a simple example:
 
-```
+```text
 function A uses global variable G
 function Z also uses global variable G
 ```

@@ -72,7 +72,7 @@ types:
       example: 'feat: new withdraw api for rapid'
     scopes:
       default:
-        desc: Release a new features
+        desc: Release new features
         release: minor
       breaking:
         desc: Release a breaking change
