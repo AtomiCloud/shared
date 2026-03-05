@@ -10,6 +10,9 @@ invocation:
   - collections
   - functional
   - helpers
+  - map
+  - filter
+  - reduce
 ---
 
 # Utility Libraries

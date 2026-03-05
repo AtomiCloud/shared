@@ -6,6 +6,12 @@ invocation:
   - layers
   - three-layer
   - layer
+  - mapper
+  - repository
+  - controller
+  - adapter
+  - hexagonal
+  - domain-layer
 ---
 
 # Three-Layer Architecture
@@ -45,7 +51,7 @@ API Layer (Guardrails) → Domain Layer (Logic) → Data Layer (Storage)
 
 1. Composable — higher-level mappers reuse lower-level
 2. SRP grouping — update requests target records by update rate
-3. ToData mutates — preserves ID/PK for ORM compatibility
+3. ToData mutates — preserves ID/PK for ORM compatibility (this is an adapter-layer exception to the immutability rule in [`/stateless-oop-di`](../stateless-oop-di/); mutability is inevitable at the storage boundary)
 
 ## Error Flow
 
@@ -73,3 +79,4 @@ Related skills:
 - [`/testing`](../testing/) — For testing pure domain logic with mocks
 - [`/domain-modeling`](../domain-modeling/) — For modeling the domain layer
 - [`/error-handling`](../error-handling/) — For Result types and error mapping
+- [`/validation`](../validation/) — For validation placement at API boundary

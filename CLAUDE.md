@@ -56,4 +56,3 @@ Skills are designed to be language-agnostic with implementation guidance for:
 - TypeScript (Bun)
 - C# (.NET)
 - Go
-- Rust

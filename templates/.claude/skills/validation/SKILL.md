@@ -10,6 +10,8 @@ invocation:
   - schema
   - input-validation
   - request-validation
+  - parse
+  - sanitize
 ---
 
 # Data Validation
@@ -59,3 +61,4 @@ Related skills:
 - [`/error-handling`](../error-handling/) — For returning validation errors
 - [`/domain-modeling`](../domain-modeling/) — For domain invariants
 - [`/three-layer-architecture`](../three-layer-architecture/) — For validation placement
+- [`/datetime`](../datetime/) — For validating date inputs

@@ -10,6 +10,9 @@ invocation:
   - aggregate-root
   - crud
   - ubiquitous-language
+  - model
+  - entity
+  - bounded-context
 ---
 
 # Domain Modeling
@@ -63,3 +66,5 @@ Related skills:
 - [`/error-handling`](../error-handling/) — For Result types and error handling patterns
 - [`/stateless-oop-di`](../stateless-oop-di/) — For stateless services that operate on domain types
 - [`/three-layer-architecture`](../three-layer-architecture/) — For layer separation with mappers
+- [`/validation`](../validation/) — For domain invariant validation
+- [`/testing`](../testing/) — For testing domain types and services

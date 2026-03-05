@@ -6,6 +6,11 @@ invocation:
   - di
   - dependency-injection
   - oop
+  - service
+  - class
+  - interface
+  - object
+  - structure
 ---
 
 # Stateless OOP with Dependency Injection

@@ -47,7 +47,7 @@ When prompted: "Update write state: {UPDATES_JSON}"
 3. Write back to `.contributor-docs/write-state.json`
 4. If `step` changed, append transition log:
    ```bash
-   echo "$(date -Iseconds) phase=write from={old_step} to={new_step}" >> .contributor-docs/transitions.log
+   echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) phase=write from={old_step} to={new_step}" >> .contributor-docs/transitions.log
    ```
 5. Report what changed
 
@@ -58,7 +58,7 @@ When prompted to update `task-state.json` (phase transitions only):
 3. Write back
 4. Append phase transition log:
    ```bash
-   echo "$(date -Iseconds) phase-transition from={old} to={new}" >> .contributor-docs/transitions.log
+   echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) phase-transition from={old} to={new}" >> .contributor-docs/transitions.log
    ```
 
 ### Report Format

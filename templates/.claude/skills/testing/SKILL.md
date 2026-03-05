@@ -10,6 +10,11 @@ invocation:
   - functional-test
   - sit
   - e2e
+  - mock
+  - spy
+  - aaa
+  - arrange
+  - assert
 ---
 
 # Testing Conventions
@@ -18,17 +23,17 @@ invocation:
 
 ### Test Pyramid (bottom → top)
 
-| Level           | Scope                        | Box       | Speed   | Coverage Goal                          |
-| --------------- | ---------------------------- | --------- | ------- | -------------------------------------- |
-| **Unit**        | Single class/function        | White-box | Fast    | 100% domain coverage                   |
-| **Functional**  | Interface contract           | Black-box | Fast    | All implementations pass same contract |
-| **Integration** | Adapter + real dependency    | White-box | Medium  | 100% adapter coverage                  |
-| **SIT**         | Full system, single endpoint | Black-box | Slow    | Endpoint-by-endpoint behavior          |
-| **E2E**         | Full system + UI             | Black-box | Slowest | Critical happy paths only              |
+| Level           | Scope                        | Coverage Goal                          |
+| --------------- | ---------------------------- | -------------------------------------- |
+| **Unit**        | Single class/function        | 100% domain coverage                   |
+| **Functional**  | Interface contract           | All implementations pass same contract |
+| **Integration** | Adapter + real dependency    | 100% adapter coverage                  |
+| **SIT**         | Full system, single endpoint | Endpoint-by-endpoint behavior          |
+| **E2E**         | Full system + UI             | Critical happy paths only              |
 
 ### Frameworks
 
-See reference.md for framework details.
+See [reference.md](./reference.md) for framework details.
 
 ### Test Naming Conventions
 
@@ -50,7 +55,7 @@ See reference.md for framework details.
 
 | Language   | Unit + Functional                           | Integration                                                |
 | ---------- | ------------------------------------------- | ---------------------------------------------------------- |
-| TypeScript | `test/unit/`                                | `test/integration/`                                        |
+| TypeScript | `tests/unit/`                               | `tests/integration/`                                       |
 | C#         | `{Service}.UnitTest/` project               | `{Service}.IntTest/` project                               |
 | Go         | `lib/` folder (`_test.go` alongside domain) | `adapters/` folder (`_test.go` + `//go:build integration`) |
 

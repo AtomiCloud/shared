@@ -32,8 +32,10 @@ Principal holds all records: `Principal { id, record, immutable?, sync? }`
 
 ## Folder Structure
 
+> **Note:** TypeScript uses `src/lib/` and `src/adapters/`; Go uses `lib/` and `adapters/` at root. C# uses project-per-layer.
+
 ```text
-lib/                        # Domain layer
+[src/]lib/                  # Domain layer (src/ prefix for TypeScript only)
   <bounded-context>/
     <entity>/
       structures.ts|cs|go   # Record, Principal, AggregateRoot
@@ -41,7 +43,7 @@ lib/                        # Domain layer
       service.ts|cs|go
       errors.ts|cs|go
 
-adapters/                   # Adapter layer
+[src/]adapters/             # Adapter layer (src/ prefix for TypeScript only)
   <bounded-context>/
     <entity>/
       api/

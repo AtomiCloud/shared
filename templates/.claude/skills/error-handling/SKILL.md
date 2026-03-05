@@ -10,6 +10,8 @@ invocation:
   - railway
   - rop
   - problem-details
+  - exception
+  - error-mapping
 ---
 
 # Error Handling
@@ -70,3 +72,4 @@ Related skills:
 - [`/domain-modeling`](../domain-modeling/) — For domain error type definitions
 - [`/three-layer-architecture`](../three-layer-architecture/) — For layer separation and controller-level error mapping
 - [`/stateless-oop-di`](../stateless-oop-di/) — For stateless services that return Results
+- [`/validation`](../validation/) — For returning validation errors as Results

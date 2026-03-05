@@ -159,7 +159,7 @@ Dispatch: `audit/PHASE.md`
 **Transition logging:** When advancing phases, the state-agent appends:
 
 ```bash
-echo "$(date -Iseconds) phase-transition from={old_phase} to={new_phase}" >> .contributor-docs/transitions.log
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) phase-transition from={old_phase} to={new_phase}" >> .contributor-docs/transitions.log
 ```
 
 ## File-Processor Pattern
@@ -210,4 +210,4 @@ Progress survives context loss. Re-running resumes from where it left off.
 
 ## Related Skills
 
-- [fact-check](../../../.claude-liftoff/skills/fact-check/SKILL.md) — same file-processor pattern for per-file verification
+None — this is a standalone documentation generation pipeline.
