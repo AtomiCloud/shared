@@ -68,16 +68,16 @@ invocation:
 ## See Also
 
 Language-specific docs:
-let**_= if (useTypeScript) { _**
+let***= if (useTypeScript) { ***
 
 - [TypeScript](../../../docs/developer/standard/utilities/languages/typescript.md)
-  let**_= } _**
-  let**_= if (useCSharp) { _**
+  let***= } ***
+  let***= if (useCSharp) { ***
 - [C#](../../../docs/developer/standard/utilities/languages/csharp.md)
-  let**_= } _**
-  let**_= if (useGo) { _**
+  let***= } ***
+  let***= if (useGo) { ***
 - [Go](../../../docs/developer/standard/utilities/languages/go.md)
-  let**_= } _**
+  let***= } ***
 
 Related skills:
 

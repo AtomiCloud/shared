@@ -270,16 +270,16 @@ This ensures:
 ## Language-Specific Details
 
 See language-specific guides for implementation details:
-let**_= if (useTypeScript) { _**
+let***= if (useTypeScript) { ***
 
 - [TypeScript/Bun](./languages/typescript.md) — Temporal API via `@js-temporal/polyfill` (has `PlainDate`, `PlainTime`)
-  let**_= } _**
-  let**_= if (useCSharp) { _**
+  let***= } ***
+  let***= if (useCSharp) { ***
 - [C#/.NET](./languages/csharp.md) — Native types: DateTime, DateTimeOffset, **DateOnly**, **TimeOnly** (.NET 6+)
-  let**_= } _**
-  let**_= if (useGo) { _**
+  let***= } ***
+  let***= if (useGo) { ***
 - [Go](./languages/go.md) — Standard library `time` package — **no true DateOnly/TimeOnly types**
-  let**_= } _**
+  let***= } ***
 
 ## Related Articles
 
