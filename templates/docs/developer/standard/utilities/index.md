@@ -194,10 +194,16 @@ lo.Filter(items, func(x T, _ int) bool { return x.Active })
 ## Language-Specific Details
 
 See language-specific guides for implementation details:
+let**_= if (useTypeScript) { _**
 
 - [TypeScript/Bun](./languages/typescript.md) — Lodash with tree-shakeable imports
+  let**_= } _**
+  let**_= if (useCSharp) { _**
 - [C#/.NET](./languages/csharp.md) — LINQ native usage
+  let**_= } _**
+  let**_= if (useGo) { _**
 - [Go](./languages/go.md) — stdlib `slices`/`maps` + `samber/lo`
+  let**_= } _**
 
 ## Related Articles
 

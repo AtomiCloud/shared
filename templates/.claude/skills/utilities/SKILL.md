@@ -67,7 +67,17 @@ invocation:
 
 ## See Also
 
-Language-specific docs: [TypeScript](../../../docs/developer/standard/utilities/languages/typescript.md) | [C#](../../../docs/developer/standard/utilities/languages/csharp.md) | [Go](../../../docs/developer/standard/utilities/languages/go.md)
+Language-specific docs:
+let**_= if (useTypeScript) { _**
+
+- [TypeScript](../../../docs/developer/standard/utilities/languages/typescript.md)
+  let**_= } _**
+  let**_= if (useCSharp) { _**
+- [C#](../../../docs/developer/standard/utilities/languages/csharp.md)
+  let**_= } _**
+  let**_= if (useGo) { _**
+- [Go](../../../docs/developer/standard/utilities/languages/go.md)
+  let**_= } _**
 
 Related skills:
 

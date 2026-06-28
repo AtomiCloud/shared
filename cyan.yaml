@@ -9,3 +9,21 @@ readme: cyan/README.MD
 processors: ['cyan/default']
 plugins: []
 templates: []
+resolvers:
+  - resolver: atomi/md
+    config: {}
+    files: ['CLAUDE.MD']
+build:
+  registry: ${DOMAIN:-docker.io}/${GITHUB_REPO_REF:-atomi}
+  platforms:
+    - linux/amd64
+    - linux/arm64
+  images:
+    template:
+      image: shared
+      dockerfile: cyan/template.Dockerfile
+      context: ./cyan
+    blob:
+      image: shared-blob
+      dockerfile: cyan/blob.Dockerfile
+      context: .

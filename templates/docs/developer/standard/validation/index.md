@@ -229,10 +229,16 @@ Return meaningful, actionable errors:
 ## Language-Specific Details
 
 See language-specific guides for implementation details:
+let**_= if (useTypeScript) { _**
 
 - [TypeScript/Bun](./languages/typescript.md) — Zod library usage
+  let**_= } _**
+  let**_= if (useCSharp) { _**
 - [C#/.NET](./languages/csharp.md) — FluentValidation library usage
+  let**_= } _**
+  let**_= if (useGo) { _**
 - [Go](./languages/go.md) — go-playground/validator struct tags
+  let**_= } _**
 
 ## Related Articles
 

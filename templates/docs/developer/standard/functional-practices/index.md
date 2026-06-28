@@ -231,10 +231,16 @@ Grouping does not require hiding. A group can be fully transparent -- every memb
 ## Language-Specific Details
 
 See language-specific guides for implementation details:
+let**_= if (useTypeScript) { _**
 
 - [TypeScript/Bun](./languages/typescript.md)
+  let**_= } _**
+  let**_= if (useCSharp) { _**
 - [C#/.NET](./languages/csharp.md)
+  let**_= } _**
+  let**_= if (useGo) { _**
 - [Go](./languages/go.md)
+  let**_= } _**
 
 ## Related Articles
 

@@ -1,0 +1,114 @@
+tests:
+  - name: no_languages
+    expected:
+      type: snapshot
+      value:
+        path: cyan/fixtures/expected/no_languages
+    answer_state:
+      atomi/shared/languages:
+        type: StringArray
+        value: []
+    validate:
+      - test -f CLAUDE.MD
+      - grep -q '^# Code Rules' CLAUDE.MD
+      - grep -q 'docs/developer/standard/software-design-philosophy/index.md' CLAUDE.MD
+      - test ! -f docs/developer/standard/validation/languages/typescript.md
+      - test ! -f docs/developer/standard/validation/languages/csharp.md
+      - test ! -f docs/developer/standard/validation/languages/go.md
+      - "! grep -RqE 'languages/(typescript|csharp|go)\\.md' CLAUDE.MD docs .claude/skills"
+      - "! grep -Rq 'let___' ."
+    deterministic_state: {}
+
+  - name: all_languages
+    expected:
+      type: snapshot
+      value:
+        path: cyan/fixtures/expected/all_languages
+    answer_state:
+      atomi/shared/languages:
+        type: StringArray
+        value:
+          - TypeScript
+          - C#
+          - Go
+    validate:
+      - test -f CLAUDE.MD
+      - grep -q '^# Code Rules' CLAUDE.MD
+      - test -f docs/developer/standard/validation/languages/typescript.md
+      - test -f docs/developer/standard/validation/languages/csharp.md
+      - test -f docs/developer/standard/validation/languages/go.md
+      - test -f docs/developer/standard/utilities/languages/typescript.md
+      - test -f docs/developer/standard/utilities/languages/csharp.md
+      - test -f docs/developer/standard/utilities/languages/go.md
+      - grep -Rq 'languages/typescript.md' CLAUDE.MD docs .claude/skills
+      - grep -Rq 'languages/csharp.md' CLAUDE.MD docs .claude/skills
+      - grep -Rq 'languages/go.md' CLAUDE.MD docs .claude/skills
+      - test "$(head -1 CLAUDE.MD)" = "# Code Rules"
+      - "! grep -Rq 'let___' ."
+    deterministic_state: {}
+
+  - name: typescript_only
+    expected:
+      type: snapshot
+      value:
+        path: cyan/fixtures/expected/typescript_only
+    answer_state:
+      atomi/shared/languages:
+        type: StringArray
+        value:
+          - TypeScript
+    validate:
+      - test -f CLAUDE.MD
+      - grep -q '^# Code Rules' CLAUDE.MD
+      - test -f docs/developer/standard/validation/languages/typescript.md
+      - test ! -f docs/developer/standard/validation/languages/csharp.md
+      - test ! -f docs/developer/standard/validation/languages/go.md
+      - grep -Rq 'languages/typescript.md' CLAUDE.MD docs .claude/skills
+      - "! grep -RqE 'languages/(csharp|go)\\.md' CLAUDE.MD docs .claude/skills"
+      - test "$(head -1 CLAUDE.MD)" = "# Code Rules"
+      - "! grep -Rq 'let___' ."
+    deterministic_state: {}
+
+  - name: csharp_only
+    expected:
+      type: snapshot
+      value:
+        path: cyan/fixtures/expected/csharp_only
+    answer_state:
+      atomi/shared/languages:
+        type: StringArray
+        value:
+          - C#
+    validate:
+      - test -f CLAUDE.MD
+      - grep -q '^# Code Rules' CLAUDE.MD
+      - test ! -f docs/developer/standard/validation/languages/typescript.md
+      - test -f docs/developer/standard/validation/languages/csharp.md
+      - test ! -f docs/developer/standard/validation/languages/go.md
+      - grep -Rq 'languages/csharp.md' CLAUDE.MD docs .claude/skills
+      - "! grep -RqE 'languages/(typescript|go)\\.md' CLAUDE.MD docs .claude/skills"
+      - test "$(head -1 CLAUDE.MD)" = "# Code Rules"
+      - "! grep -Rq 'let___' ."
+    deterministic_state: {}
+
+  - name: go_only
+    expected:
+      type: snapshot
+      value:
+        path: cyan/fixtures/expected/go_only
+    answer_state:
+      atomi/shared/languages:
+        type: StringArray
+        value:
+          - Go
+    validate:
+      - test -f CLAUDE.MD
+      - grep -q '^# Code Rules' CLAUDE.MD
+      - test ! -f docs/developer/standard/validation/languages/typescript.md
+      - test ! -f docs/developer/standard/validation/languages/csharp.md
+      - test -f docs/developer/standard/validation/languages/go.md
+      - grep -Rq 'languages/go.md' CLAUDE.MD docs .claude/skills
+      - "! grep -RqE 'languages/(typescript|csharp)\\.md' CLAUDE.MD docs .claude/skills"
+      - test "$(head -1 CLAUDE.MD)" = "# Code Rules"
+      - "! grep -Rq 'let___' ."
+    deterministic_state: {}
