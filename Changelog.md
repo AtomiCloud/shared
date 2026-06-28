@@ -1,3 +1,17 @@
+## [1.3.0](https://github.com/AtomiCloud/shared/compare/v1.2.2...v1.3.0) (2026-06-28)
+
+
+### ✨ Features ✨
+
+* add shared code rules language gating ([c82a374](https://github.com/AtomiCloud/shared/commit/c82a374dc6a7dd7e67e5338ee35290ebb398ef9d))
+* format docs ([0360786](https://github.com/AtomiCloud/shared/commit/036078680e40d6e2963b83e3971b8609cd67d33e))
+* tech docs skill ([7052d4b](https://github.com/AtomiCloud/shared/commit/7052d4bf80a4f1f6608e2cec8c7819517ea0f1df))
+
+
+### 🐛 Bug Fixes 🐛
+
+* audit fixes across all skills ([3d114c3](https://github.com/AtomiCloud/shared/commit/3d114c32f1d2e00f173396313449d90f9d2b9d7e))
+
 ## [1.2.2](https://github.com/AtomiCloud/shared/compare/v1.2.1...v1.2.2) (2026-02-25)
 
 
