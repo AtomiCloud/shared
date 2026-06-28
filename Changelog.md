@@ -1,3 +1,11 @@
+## [1.3.1](https://github.com/AtomiCloud/shared/compare/v1.3.0...v1.3.1) (2026-06-28)
+
+
+### 🐛 Bug Fixes 🐛
+
+* incorrect cyan version ([7a5c626](https://github.com/AtomiCloud/shared/commit/7a5c6264c27e69ffdc081250978fb00d4a656c0b))
+* incorrect formatting ([92f81c6](https://github.com/AtomiCloud/shared/commit/92f81c608e86b781116b89363dd8ff80aa6b4377))
+
 ## [1.3.0](https://github.com/AtomiCloud/shared/compare/v1.2.2...v1.3.0) (2026-06-28)
 
 
